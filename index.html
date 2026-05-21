@@ -31,6 +31,11 @@
             white-space: pre-line !important;
         }
 
+        /* منع انقسام صفوف الجدول بشكل مشوه عند الطباعة أو التصدير لـ PDF */
+        tr {
+            page-break-inside: avoid !important;
+        }
+
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .pdf-page { 
@@ -55,6 +60,7 @@
 
     <div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         
+        <!-- Controls Sidebar Panel -->
         <div class="lg:col-span-6 space-y-6 no-print">
             
             <div class="bg-white p-5 rounded-xl shadow-md space-y-5 h-fit">
@@ -79,22 +85,21 @@
                         
                         <input type="file" id="excel-file-input" accept=".csv" multiple class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 cursor-pointer">
                         
-                        <div id="sheets-editor-container" class="space-y-4 pt-2 max-h-[350px] overflow-y-auto hidden pr-1">
-                            </div>
+                        <div id="sheets-editor-container" class="space-y-4 pt-2 max-h-[350px] overflow-y-auto hidden pr-1"></div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">لغة المستند (Document Language)</label>
-                        <select id="input-lang" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                        <select id="input-lang" onchange="updateLocalization()" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none font-medium">
                             <option value="en">English (الإنجليزية)</option>
                             <option value="ar">العربية (Arabic)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">نوع المستند (Document Type)</label>
-                        <select id="input-doc-type" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                        <select id="input-doc-type" onchange="updateDocLabels()" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none font-medium">
                             <option value="quotation">عرض سعر (Quotation)</option>
                             <option value="invoice">فاتورة (Invoice)</option>
                             <option value="tax_invoice">فاتورة ضريبية (Tax Invoice)</option>
@@ -102,22 +107,22 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">رقم المستند / الفاتورة (Document Number)</label>
-                        <input type="text" id="input-doc-number" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none" placeholder="e.g. INV-001">
+                        <input type="text" id="input-doc-number" oninput="syncMetadata()" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none" placeholder="e.g. INV-001">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">اختر العملة (Select Currency)</label>
-                        <select id="input-currency" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                        <select id="input-currency" onchange="syncInvoicePricesOnly()" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none font-medium">
                             <option value="EGP">جنيه مصري (EGP)</option>
                             <option value="$">دولار أمريكي (USD - $)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ المستند (Date)</label>
-                        <input type="date" id="input-date" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="date" id="input-date" onchange="syncMetadata()" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">تفاصيل العميل (Customer Details)</label>
-                        <textarea id="input-customer" rows="2" placeholder="اسم العميل والشركة..." class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                        <textarea id="input-customer" rows="2" oninput="syncMetadata()" placeholder="اسم العميل والشركة..." class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
                     </div>
                 </div>
 
@@ -127,9 +132,9 @@
                         <span class="text-[10px] font-normal text-gray-500 bg-white border px-1.5 py-0.5 rounded">كود [مسافة] كمية [Enter]</span>
                     </h3>
                     <div class="space-y-2">
-                        <input type="text" id="smart-input" placeholder="اكتب الكود ثم اضغط مسافة..." class="w-full p-3 border-2 border-amber-300 rounded-lg text-md font-semibold tracking-wide focus:outline-none transition-all placeholder-gray-400 shadow-inner">
+                        <input type="text" id="smart-input" onkeydown="handleSmartInput(event)" placeholder="اكتب الكود ثم اضغط مسافة..." class="w-full p-3 border-2 border-amber-300 rounded-lg text-md font-semibold tracking-wide focus:outline-none transition-all placeholder-gray-400 shadow-inner">
                         <div class="flex justify-between text-[11px] font-medium px-1" dir="rtl">
-                            <span id="smart-status" class="text-gray-500 font-cairo">حالة الإدخال: <b class="text-blue-600">انتظار قراءة الكود...</b></span>
+                            <span id="smart-status" class="text-gray-500 font-cairo">حالة الإدخال: <b id="smart-status-text" class="text-blue-600">انتظار قراءة الكود...</b></span>
                         </div>
                     </div>
                 </div>
@@ -137,19 +142,19 @@
                 <div class="border-t pt-4 grid grid-cols-2 gap-4">
                     <div id="vat-input-container" class="hidden col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">ضريبة القيمة المضافة (VAT %)</label>
-                        <input type="number" id="input-vat" value="14" min="0" max="100" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="number" id="input-vat" oninput="calculateTotals()" value="14" min="0" max="100" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">قيمة الخصم (Discount Amount)</label>
-                        <input type="number" id="input-discount" value="0" min="0" step="0.01" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="number" id="input-discount" oninput="calculateTotals()" value="0" min="0" step="0.01" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">نسبة الدفع المقدم (Down Payment %)</label>
-                        <input type="number" id="input-downpayment" value="0" min="0" max="100" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="number" id="input-downpayment" oninput="calculateTotals()" value="0" min="0" max="100" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">تكلفة الشحن (Shipping)</label>
-                        <input type="number" id="input-shipping" value="0" min="0" step="0.01" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
+                        <input type="number" id="input-shipping" oninput="calculateTotals()" value="0" min="0" step="0.01" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-amber-500 outline-none">
                     </div>
                 </div>
 
@@ -174,20 +179,22 @@
                     <button onclick="clearArchiveSearch()" class="absolute left-2.5 top-2.5 text-gray-400 hover:text-gray-600 text-xs font-bold">✕</button>
                 </div>
 
-                <div id="archive-list" class="space-y-3 max-h-[200px] overflow-y-auto pr-1">
-                    </div>
+                <div id="archive-list" class="space-y-3 max-h-[200px] overflow-y-auto pr-1"></div>
             </div>
 
         </div>
 
+        <!-- Document Preview Canvas -->
         <div class="lg:col-span-6 flex justify-center overflow-x-auto">
             <div id="quotation-preview" class="pdf-page shadow-2xl relative transition-all">
                 
                 <div>
-                    <div id="pdf-header-container" class="flex justify-between items-start border-b-2 border-gray-100 pb-4 text-left select-none" dir="ltr">
+                    <!-- هيدر الفاتورة بعد تعديل اللوجو وربطه برابط مباشر لجوجل درايف -->
+                    <div id="pdf-header-container" class="flex justify-between items-center border-b-2 border-gray-100 pb-4 text-left select-none" dir="ltr">
                         <div class="flex items-center space-x-4">
-                            <img src="LOGO.jpg" alt="Diamond Plast Co." class="h-14 w-auto object-contain">
-                            <div class="flex flex-col justify-center mx-3">
+                            <!-- تم وضع الشعار الجديد هنا كرابط مباشر مع إتاحة ميزة الـ CORS لضمان اشتغاله مع الـ PDF -->
+                            <img src="https://vps-king.xyz/mirror/dp_logo.png" crossorigin="anonymous" alt="Diamond Plast Logo" class="h-20 w-auto object-contain" onerror="this.src='https://docs.google.com/uc?export=download&id=1T93HKr3zoVVNL6AaeiAbByT0yWRYjsA5'">
+                            <div class="flex flex-col justify-center mx-1">
                                 <h1 class="text-lg font-black tracking-wider text-gray-900 leading-none">DIAMOND <span class="text-amber-500 font-normal">PLAST</span></h1>
                                 <p class="text-[8px] uppercase tracking-widest text-gray-500 font-medium mt-1">Design and manufacture of chocolate molds</p>
                                 <p class="text-[9px] text-gray-400 font-semibold mt-1">Diamond Plast Co. For Chocolate Molds industry U.R.M.M</p>
@@ -226,17 +233,16 @@
                     <table id="pdf-table" class="w-full text-left border-collapse table-fixed">
                         <thead>
                             <tr class="border-b-2 border-gray-800 text-[11px] font-bold uppercase tracking-wider text-gray-700">
-                                <th class="py-2 px-1" id="th-code" style="width: 14%;">Code</th>
-                                <th class="py-2 px-1" id="th-spec" style="width: 32%;">Specifications</th>
+                                <th class="py-2 px-1" id="th-code" style="width: 15%;">Code</th>
+                                <th class="py-2 px-1" id="th-spec" style="width: 31%;">Specifications</th>
                                 <th class="py-2 px-1" id="th-material" style="width: 18%;">Material</th>
                                 <th class="py-2 px-1 text-center" id="th-qty" style="width: 11%;">Quantity</th>
-                                <th class="py-2 px-1" id="th-unit-price" style="width: 12%;">Unit Price</th>
-                                <th class="py-2 px-1" id="th-total-price" style="width: 13%;">Total Price</th>
-                                <th class="py-2 px-1 text-center no-print" style="width: 3%;"></th>
+                                <th class="py-2 px-1 text-right" id="th-unit-price" style="width: 12%;">Unit Price</th>
+                                <th class="py-2 px-1 text-right" id="th-total-price" style="width: 13%;">Total Price</th>
+                                <th class="py-2 px-1 text-center no-print" style="width: 4%;"></th>
                             </tr>
                         </thead>
-                        <tbody id="pdf-table-body" class="text-xs divide-y divide-gray-100">
-                            </tbody>
+                        <tbody id="pdf-table-body" class="text-xs divide-y divide-gray-100"></tbody>
                     </table>
 
                     <div id="pdf-summary-container" class="flex justify-end mt-4">
@@ -285,6 +291,10 @@
 
     <script>
         let uploadedSheets = [];
+        let currentInvoiceItems = [];
+        let archiveItems = [];
+        let parsingMode = 'code'; 
+        let parsedActiveCode = '';
 
         const defaultSheetData = {
             sheetId: "default",
@@ -302,10 +312,30 @@
         const fallbackCodes = ["G-8000","G-8006","G-8011","G-8013","G-8015","G-8016","G-8017","G-8020","G-8023","G-8024","G-8025","G-8026","G-8028","G-8029","G-8030","G-8031","G-8032","G-8033","G-8034","G-8035","G-8036","G-8037","G-8038","G-8042","G-8043","G-8044","G-8045","G-8054","G-8055","G-8056","G-8057","G-8058","G-8059","G-8061","G-8062","G-8063","G-8065","G-8069","G-8070","G-8071","G-8072","G-8073","G-8074","G-8076","G-8077","G-8078","G-8079","G-8080","G-8081","G-8083","G-8084","G-8086"];
         fallbackCodes.forEach(code => {
             defaultSheetData.products[code] = { 
-                spec_en: "Chocolate Mold", spec_ar: "قالب شيكولاتة", 
+                spec_en: "Chocolate Mold " + code, spec_ar: "قالب شيكولاتة " + code, 
                 material_en: "Polycarbonate", material_ar: "بولي كربونات" 
             };
         });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadSheetsFromStorage();
+            loadArchiveFromStorage();
+            setDefaultDate();
+            updateDocLabels();
+            updateLocalization();
+            updatePreview();
+        });
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('input-date').value = today;
+            syncMetadata();
+        }
+
+        function isArabicText(text) {
+            const arabicPattern = /[\u0600-\u06FF]/;
+            return arabicPattern.test(text);
+        }
 
         function toggleSheetManager() {
             const content = document.getElementById('sheet-manager-content');
@@ -322,17 +352,6 @@
                 btn.classList.replace('bg-emerald-600', 'bg-blue-600');
                 btn.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
             }
-        }
-
-        window.addEventListener('DOMContentLoaded', function() {
-            loadSheetsFromStorage();
-            updatePreview();
-            renderArchiveList();
-        });
-
-        function isArabicText(text) {
-            const arabicPattern = /[\u0600-\u06FF]/;
-            return arabicPattern.test(text);
         }
 
         document.getElementById('excel-file-input').addEventListener('change', function(e) {
@@ -474,23 +493,24 @@
             }
         }
 
-        function saveSheetsToStorage(showAlert = false) {
-            localStorage.setItem('dp_uploaded_sheets', JSON.stringify(uploadedSheets));
-            if (showAlert) {
-                alert(`✓ تم حفظ وتخزين الشيتات بنجاح!`);
+        function addNewSheetBracket(sheetId) {
+            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
+            if (sheet) {
+                const lastBracket = sheet.brackets[sheet.brackets.length - 1];
+                const nextFrom = lastBracket ? lastBracket.toQty + 1 : 1;
+                sheet.brackets.push({ fromQty: nextFrom, toQty: nextFrom + 50, priceEGP: 400, priceUSD: 8 });
+                
+                const bContainer = document.getElementById(`brackets-sheet-container-${sheetId}`);
+                if(bContainer) bContainer.innerHTML = renderSheetBracketsHtml(sheetId, sheet.brackets);
             }
         }
 
-        function loadSheetsFromStorage() {
-            const stored = localStorage.getItem('dp_uploaded_sheets');
-            if (stored) {
-                try {
-                    uploadedSheets = JSON.parse(stored);
-                    renderAllSheetEditorTables();
-                } catch (e) {
-                    console.error("خطأ أثناء قراءة الشيتات المخزنة", e);
-                    uploadedSheets = [];
-                }
+        function deleteSheetBracket(sheetId, idx) {
+            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
+            if (sheet) {
+                sheet.brackets.splice(idx, 1);
+                const bContainer = document.getElementById(`brackets-sheet-container-${sheetId}`);
+                if(bContainer) bContainer.innerHTML = renderSheetBracketsHtml(sheetId, sheet.brackets);
             }
         }
 
@@ -519,518 +539,449 @@
             }
         }
 
-        function addNewSheetBracket(sheetId) {
-            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
-            if (sheet) {
-                const lastBracket = sheet.brackets[sheet.brackets.length - 1];
-                const nextFrom = lastBracket ? lastBracket.toQty + 1 : 1;
-                sheet.brackets.push({ fromQty: nextFrom, toQty: nextFrom + 50, priceEGP: 400, priceUSD: 8 });
-                
-                const bContainer = document.getElementById(`brackets-sheet-container-${sheetId}`);
-                if(bContainer) bContainer.innerHTML = renderSheetBracketsHtml(sheetId, sheet.brackets);
+        function saveSheetsToStorage(showAlert = false) {
+            localStorage.setItem('dp_uploaded_sheets', JSON.stringify(uploadedSheets));
+            if (showAlert) alert(`✓ تم حفظ وتخزين الشيتات بنجاح!`);
+        }
+
+        function loadSheetsFromStorage() {
+            const stored = localStorage.getItem ? localStorage.getItem('dp_uploaded_sheets') : null;
+            if (stored) {
+                try {
+                    uploadedSheets = JSON.parse(stored);
+                    renderAllSheetEditorTables();
+                } catch (e) {
+                    console.error(e);
+                    uploadedSheets = [];
+                }
             }
         }
 
-        function deleteSheetBracket(sheetId, idx) {
-            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
-            if (sheet && sheet.brackets.length > 1) {
-                sheet.brackets.splice(idx, 1);
-                const bContainer = document.getElementById(`brackets-sheet-container-${sheetId}`);
-                if(bContainer) bContainer.innerHTML = renderSheetBracketsHtml(sheetId, sheet.brackets);
+        function handleSmartInput(event) {
+            const inputElement = document.getElementById('smart-input');
+            const statusText = document.getElementById('smart-status-text');
+            let rawValue = inputElement.value.trim().toUpperCase();
+
+            if (event.key === ' ' || event.keyCode === 32) {
+                if (parsingMode === 'code' && rawValue.length > 0) {
+                    event.preventDefault();
+                    parsedActiveCode = rawValue;
+                    
+                    let targetProduct = locateProductByCode(parsedActiveCode);
+                    if (targetProduct) {
+                        parsingMode = 'quantity';
+                        inputElement.value = '';
+                        statusText.className = "text-amber-600 animate-pulse";
+                        statusText.innerText = `تم تمييز [${parsedActiveCode}]. أدخل الكمية واضغط Enter...`;
+                    } else {
+                        statusText.className = "text-red-600";
+                        statusText.innerText = `الكود [${parsedActiveCode}] غير موجود بأي شيت نشط!`;
+                    }
+                }
             }
+
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                event.preventDefault();
+                if (parsingMode === 'quantity' && rawValue.length > 0) {
+                    const parsedQty = parseInt(rawValue);
+                    if (!isNaN(parsedQty) && parsedQty > 0) {
+                        addProductToInvoice(parsedActiveCode, parsedQty);
+                        
+                        parsingMode = 'code';
+                        parsedActiveCode = '';
+                        inputElement.value = '';
+                        statusText.className = "text-blue-600";
+                        statusText.innerText = "حالة الإدخال: تم الإدخال بنجاح! انتظار كود جديد...";
+                    } else {
+                        statusText.innerText = "خطأ! يرجى إدخال رقم كمية صحيح...";
+                    }
+                } else if (parsingMode === 'code' && rawValue.length > 0) {
+                    let targetProduct = locateProductByCode(rawValue);
+                    if (targetProduct) {
+                        addProductToInvoice(rawValue, 1);
+                        inputElement.value = '';
+                        statusText.innerText = "تمت إضافة قطعة واحدة افتراضية.";
+                    }
+                }
+            }
+        }
+
+        function locateProductByCode(code) {
+            for (let sheet of uploadedSheets) {
+                if (sheet.products && sheet.products[code]) {
+                    return { product: sheet.products[code], brackets: sheet.brackets };
+                }
+            }
+            if (defaultSheetData.products[code]) {
+                return { product: defaultSheetData.products[code], brackets: defaultSheetData.brackets };
+            }
+            return null;
+        }
+
+        function calculateTierUnitPrice(brackets, qty, currency) {
+            let matches = brackets.find(b => qty >= b.fromQty && qty <= b.toQty);
+            if (!matches && brackets.length > 0) {
+                matches = brackets[brackets.length - 1]; 
+            }
+            if (matches) {
+                return currency === 'EGP' ? matches.priceEGP : matches.priceUSD;
+            }
+            return currency === 'EGP' ? 500 : 10;
+        }
+
+        function addProductToInvoice(code, qty) {
+            const dataMatch = locateProductByCode(code);
+            if (!dataMatch) return;
+
+            const existingRow = currentInvoiceItems.find(item => item.code === code);
+            if (existingRow) {
+                existingRow.qty += qty;
+            } else {
+                currentInvoiceItems.push({
+                    code: code,
+                    spec_en: dataMatch.product.spec_en,
+                    spec_ar: dataMatch.product.spec_ar,
+                    material_en: dataMatch.product.material_en,
+                    material_ar: dataMatch.product.material_ar,
+                    qty: qty,
+                    bracketsRef: dataMatch.brackets
+                });
+            }
+            syncInvoicePricesOnly();
         }
 
         function syncInvoicePricesOnly() {
-            quotationData.items.forEach(item => {
-                const search = findProductGlobally(item.code);
-                if (search.found) {
-                    item.price = getPriceFromBrackets(search.brackets, item.qty, quotationData.currency);
-                }
+            const activeCurrency = document.getElementById('input-currency').value;
+            
+            currentInvoiceItems.forEach(item => {
+                item.unitPrice = calculateTierUnitPrice(item.bracketsRef, item.qty, activeCurrency);
+                item.totalPrice = item.unitPrice * item.qty;
             });
+
             updatePreview();
         }
 
-        function getPriceFromBrackets(brackets, qty, currency) {
-            const q = parseInt(qty) || 1;
-            const matchedBracket = brackets.find(b => q >= b.fromQty && q <= b.toQty);
+        function updateInvoiceItemQty(index, newQtyStr) {
+            const newQty = parseInt(newQtyStr) || 1;
+            if (newQty > 0 && currentInvoiceItems[index]) {
+                currentInvoiceItems[index].qty = newQty;
+                syncInvoicePricesOnly();
+            }
+        }
+
+        function removeInvoiceItem(index) {
+            currentInvoiceItems.splice(index, 1);
+            syncInvoicePricesOnly();
+        }
+
+        function updateLocalization() {
+            const lang = document.getElementById('input-lang').value;
+            const isAr = lang === 'ar';
             
-            if (matchedBracket) {
-                return currency === "EGP" ? matchedBracket.priceEGP : matchedBracket.priceUSD;
-            }
-            if (brackets.length > 0) {
-                const lastB = brackets[brackets.length - 1];
-                return currency === "EGP" ? lastB.priceEGP : lastB.priceUSD;
-            }
-            return currency === "EGP" ? 500 : 10; 
-        }
-
-        function findProductGlobally(code) {
-            const searchCode = code.trim().toUpperCase();
-
-            for (let sheet of uploadedSheets) {
-                if (sheet.products && sheet.products[searchCode]) {
-                    return { found: true, product: sheet.products[searchCode], brackets: sheet.brackets, sheetName: sheet.sheetName };
-                }
-            }
-            if (defaultSheetData.products[searchCode]) {
-                return { found: true, product: defaultSheetData.products[searchCode], brackets: defaultSheetData.brackets, sheetName: defaultSheetData.sheetName };
-            }
-            return { found: false };
-        }
-
-        const dictionary = {
-            en: {
-                align: 'text-left', dir: 'ltr', font: 'font-inter',
-                regNo: 'Commercial Reg No:', taxNo: 'Sales TAX Reg No:', fileNo: 'File Number:',
-                date: 'Date:', custTitle: 'Customer Details', noItems: 'No items added yet.',
-                thCode: 'Code', thSpec: 'Specifications', thMat: 'Material', thQty: 'Quantity',
-                thUnit: 'Unit Price', thTotal: 'Total Price', subtotal: 'Subtotal', discount: 'Discount',
-                vat: 'VAT', shipping: 'Shipping', total: 'Total Price', downpayment: 'Down Payment',
-                remaining: 'Remaining Amount', footerCo: 'Diamond Plast Co.',
-                numLabels: { quotation: 'Quotation No:', invoice: 'Invoice No:', tax_invoice: 'Invoice No:' },
-                titles: { quotation: 'QUOTATION', invoice: 'INVOICE', tax_invoice: 'TAX INVOICE' }
-            },
-            ar: {
-                align: 'text-right', dir: 'rtl', font: 'font-cairo',
-                regNo: 'رقم السجل التجاري:', taxNo: 'رقم التسجيل الضريبي:', fileNo: 'رقم الملف الضريبي:',
-                date: 'التاريخ:', custTitle: 'تفاصيل العميل', noItems: 'لم يتم إضافة منتجات بعد.',
-                thCode: 'الكود', thSpec: 'المواصفات', thMat: 'الخامة', thQty: 'الكمية',
-                thUnit: 'سعر الوحدة', thTotal: 'إجمالي السعر', subtotal: 'الإجمالي الفرعي', discount: 'الخصم',
-                vat: 'ضريبة القيمة المضافة', shipping: 'تكلفة الشحن', total: 'الإجمالي النهائي',
-                downpayment: 'المقدم المدفوع', remaining: 'المبلغ المتبقي', footerCo: 'شركة دايموند بلاست',
-                numLabels: { quotation: 'رقم عرض السعر:', invoice: 'رقم الفاتورة:', tax_invoice: 'رقم الفاتورة الضريبية:' },
-                titles: { quotation: 'عرض سعر', invoice: 'فاتورة بيع', tax_invoice: 'فاتورة ضريبية' }
-            }
-        };
-
-        let quotationData = {
-            lang: "en", docType: "quotation", docNumber: "", currency: "EGP",
-            date: new Date().toISOString().split('T')[0], customer: "",
-            vatPercent: 14, discountAmount: 0, downPaymentPercent: 0, shipping: 0.00, items: []
-        };
-
-        function refreshItemsLanguage() {
-            quotationData.items.forEach(item => {
-                const search = findProductGlobally(item.code);
-                if (search.found) {
-                    if (quotationData.lang === 'ar') {
-                        item.spec = search.product.spec_ar || search.product.spec_en;
-                        item.material = search.product.material_ar || search.product.material_en;
-                    } else {
-                        item.spec = search.product.spec_en || search.product.spec_ar;
-                        item.material = search.product.material_en || search.product.material_ar;
-                    }
-                }
-            });
-        }
-
-        function autoRepriceAllItems() {
-            quotationData.items.forEach(item => {
-                const search = findProductGlobally(item.code);
-                if (search.found) {
-                    item.price = getPriceFromBrackets(search.brackets, item.qty, quotationData.currency);
-                }
-            });
-        }
-
-        function updatePreview() {
-            const lang = quotationData.lang;
-            const dict = dictionary[lang];
-            const previewEl = document.getElementById('quotation-preview');
-
-            previewEl.setAttribute('dir', dict.dir);
-            previewEl.className = `pdf-page shadow-2xl relative ${dict.font}`;
+            document.getElementById('quotation-preview').dir = isAr ? 'rtl' : 'ltr';
+            document.getElementById('pdf-header-container').dir = isAr ? 'rtl' : 'ltr';
+            document.getElementById('pdf-summary-container').className = isAr ? "flex justify-start mt-4" : "flex justify-end mt-4";
             
-            if(lang === 'ar') {
-                document.getElementById('pdf-title-container').className = "my-4 flex flex-row-reverse justify-between items-end";
-                document.getElementById('pdf-meta-block').className = "text-xs text-right space-y-0.5";
-                document.getElementById('pdf-summary-container').className = "flex justify-start mt-4";
-                document.getElementById('pdf-footer-container').className = "border-t border-gray-200 pt-3 flex flex-row-reverse justify-between text-[10px] text-gray-500 mt-auto";
-                document.getElementById('pdf-table').className = "w-full text-right border-collapse table-fixed";
+            document.getElementById('lbl-reg-no').innerText = isAr ? "رقم السجل التجاري:" : "Commercial Reg No:";
+            document.getElementById('lbl-tax-no').innerText = isAr ? "رقم التسجيل الضريبي:" : "Sales TAX Reg No:";
+            document.getElementById('lbl-file-no').innerText = isAr ? "رقم الملف:" : "File Number:";
+            document.getElementById('lbl-doc-number').innerText = isAr ? "رقم المستند:" : "Document No:";
+            document.getElementById('lbl-date').innerText = isAr ? "التاريخ:" : "Date:";
+            document.getElementById('lbl-customer-title').innerText = isAr ? "تفاصيل العميل" : "Customer Details";
+            
+            document.getElementById('th-code').innerText = isAr ? "الكود" : "Code";
+            document.getElementById('th-spec').innerText = isAr ? "المواصفات" : "Specifications";
+            document.getElementById('th-material').innerText = isAr ? "الخامة" : "Material";
+            document.getElementById('th-qty').innerText = isAr ? "الكمية" : "Quantity";
+            document.getElementById('th-unit-price').innerText = isAr ? "سعر الوحدة" : "Unit Price";
+            document.getElementById('th-total-price').innerText = isAr ? "إجمالي السعر" : "Total Price";
+            
+            document.getElementById('lbl-subtotal').innerText = isAr ? "الإجمالي الفرعي" : "Subtotal";
+            document.getElementById('lbl-discount').innerText = isAr ? "قيمة الخصم" : "Discount";
+            document.getElementById('lbl-vat-name').innerText = isAr ? "ضريبة القيمة المضافة" : "VAT";
+            document.getElementById('lbl-shipping').innerText = isAr ? "تكلفة الشحن" : "Shipping";
+            document.getElementById('lbl-total').innerText = isAr ? "السعر الإجمالي النهائي" : "Total Price";
+            document.getElementById('lbl-downpayment').innerText = isAr ? "المقدم المدفوع" : "Down Payment";
+            document.getElementById('lbl-remaining').innerText = isAr ? "المبلغ المتبقي" : "Remaining Amount";
+            document.getElementById('lbl-footer-co').innerText = isAr ? "شركة دياموند بلاست" : "Diamond Plast Co.";
+
+            const tableElement = document.getElementById('pdf-table');
+            if (isAr) {
+                tableElement.classList.replace('text-left', 'text-right');
             } else {
-                document.getElementById('pdf-title-container').className = "my-4 flex justify-between items-end";
-                document.getElementById('pdf-meta-block').className = "text-xs text-right space-y-0.5";
-                document.getElementById('pdf-summary-container').className = "flex justify-end mt-4";
-                document.getElementById('pdf-footer-container').className = "border-t border-gray-200 pt-3 flex justify-between text-[10px] text-gray-500 mt-auto";
-                document.getElementById('pdf-table').className = "w-full text-left border-collapse table-fixed";
+                tableElement.classList.replace('text-right', 'text-left');
             }
 
-            document.getElementById('lbl-reg-no').innerText = dict.regNo + " ";
-            document.getElementById('lbl-tax-no').innerText = dict.taxNo + " ";
-            document.getElementById('lbl-file-no').innerText = dict.fileNo + " ";
-            document.getElementById('lbl-date').innerText = dict.date + " ";
-            document.getElementById('lbl-doc-number').innerText = dict.numLabels[quotationData.docType] + " ";
-            document.getElementById('lbl-customer-title').innerText = dict.custTitle;
-            document.getElementById('th-code').innerText = dict.thCode;
-            document.getElementById('th-spec').innerText = dict.thSpec;
-            document.getElementById('th-material').innerText = dict.thMat;
-            document.getElementById('th-qty').innerText = dict.thQty;
-            document.getElementById('th-unit-price').innerText = `${dict.thUnit} (${quotationData.currency === "EGP" ? "EGP" : "$"})`;
-            document.getElementById('th-total-price').innerText = dict.thTotal;
-            document.getElementById('lbl-subtotal').innerText = dict.subtotal;
-            document.getElementById('lbl-discount').innerText = dict.discount;
-            document.getElementById('lbl-vat-name').innerText = dict.vat;
-            document.getElementById('lbl-shipping').innerText = dict.shipping;
-            document.getElementById('lbl-total').innerText = dict.total;
-            document.getElementById('lbl-downpayment').innerText = dict.downpayment;
-            document.getElementById('lbl-remaining').innerText = dict.remaining;
-            document.getElementById('lbl-footer-co').innerText = dict.footerCo;
+            updateDocLabels();
+            updatePreview();
+        }
 
-            const titleEl = document.getElementById('pdf-doc-title');
-            const vatInputContainer = document.getElementById('vat-input-container');
-            const pdfVatRow = document.getElementById('pdf-vat-row');
+        function updateDocLabels() {
+            const docType = document.getElementById('input-doc-type').value;
+            const lang = document.getElementById('input-lang').value;
+            const vatContainer = document.getElementById('vat-input-container');
+            const vatRow = document.getElementById('pdf-vat-row');
+            
+            let titleText = "QUOTATION";
+            if (docType === 'invoice') titleText = lang === 'ar' ? "فاتورة" : "INVOICE";
+            else if (docType === 'tax_invoice') titleText = lang === 'ar' ? "فاتورة ضريبية" : "TAX INVOICE";
+            else titleText = lang === 'ar' ? "عرض سعر" : "QUOTATION";
 
-            titleEl.innerText = dict.titles[quotationData.docType];
+            document.getElementById('pdf-doc-title').innerText = titleText;
 
-            if (quotationData.docType === 'tax_invoice') {
-                vatInputContainer.classList.remove('hidden');
-                pdfVatRow.classList.remove('hidden');
+            if (docType === 'tax_invoice') {
+                vatContainer.classList.remove('hidden');
+                vatRow.classList.remove('hidden');
             } else {
-                vatInputContainer.classList.add('hidden');
-                pdfVatRow.classList.add('hidden');
+                vatContainer.classList.add('hidden');
+                vatRow.classList.add('hidden');
             }
+            calculateTotals();
+        }
 
-            const currencySigns = document.querySelectorAll('.currency-sign');
-            currencySigns.forEach(el => {
-                el.innerText = quotationData.currency === "EGP" ? " EGP" : "$";
-            });
+        function syncMetadata() {
+            const docNum = document.getElementById('input-doc-number').value || "---";
+            const docDate = document.getElementById('input-date').value || "--/--/----";
+            const custDetails = document.getElementById('input-customer').value || "---";
 
-            document.getElementById('pdf-date').innerText = quotationData.date || '--/--/----';
-            document.getElementById('pdf-doc-number').innerText = quotationData.docNumber || '---';
-            document.getElementById('pdf-customer').innerText = quotationData.customer || '---';
-            document.getElementById('pdf-vat-percentage').innerText = quotationData.vatPercent;
-            
-            const tbody = document.getElementById('pdf-table-body');
-            tbody.innerHTML = '';
-            
+            document.getElementById('pdf-doc-number').innerText = docNum;
+            document.getElementById('pdf-date').innerText = docDate;
+            document.getElementById('pdf-customer').innerText = custDetails;
+        }
+
+        function calculateTotals() {
             let subtotal = 0;
-            const currentSign = quotationData.currency === "EGP" ? " EGP" : "$";
-            const textAlignment = lang === 'ar' ? 'text-right' : 'text-left';
-            const invTextAlignment = lang === 'ar' ? 'text-left' : 'text-right';
-            
-            if (quotationData.items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-gray-400 italic">${dict.noItems}</td></tr>`;
-            } else {
-                quotationData.items.forEach((item, index) => {
-                    const itemTotal = item.qty * item.price;
-                    subtotal += itemTotal;
-                    
-                    const row = `
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="py-1 px-1 overflow-hidden text-ellipsis">
-                                <input type="text" value="${item.code}" onchange="updateItemField(${index}, 'code', this.value)" class="w-full text-gray-900 font-medium bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${textAlignment} focus:outline-none focus:bg-white truncate">
-                            </td>
-                            <td class="py-1 px-1 overflow-hidden text-ellipsis allow-wrap">
-                                <div contenteditable="true" onblur="updateItemField(${index}, 'spec', this.innerText)" class="w-full text-gray-600 bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${textAlignment} focus:outline-none min-h-[24px] focus:bg-white outline-none">${item.spec}</div>
-                            </td>
-                            <td class="py-1 px-1 overflow-hidden text-ellipsis">
-                                <div contenteditable="true" onblur="updateItemField(${index}, 'material', this.innerText)" class="w-full text-gray-600 bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${textAlignment} focus:outline-none min-h-[24px] focus:bg-white outline-none">${item.material}</div>
-                            </td>
-                            <td class="py-1 px-1 text-center">
-                                <input type="number" value="${item.qty}" min="1" onchange="updateItemField(${index}, 'qty', this.value)" class="w-full text-center font-semibold bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 focus:outline-none focus:bg-white font-mono">
-                            </td>
-                            <td class="py-1 px-1">
-                                <input type="number" value="${item.price}" min="0" step="0.01" onchange="updateItemField(${index}, 'price', this.value)" class="w-full text-gray-600 bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${invTextAlignment} focus:outline-none focus:bg-white font-mono">
-                            </td>
-                            <td class="py-2 px-1 font-semibold text-gray-900 ${invTextAlignment} font-mono truncate">${itemTotal.toFixed(2)}${currentSign}</td>
-                            <td class="py-2 px-1 text-center no-print"><button onclick="deleteItem(${index})" class="text-red-400 hover:text-red-600 font-bold transition p-0.5">✕</button></td>
-                        </tr>
-                    `;
-                    tbody.insertAdjacentHTML('beforeend', row);
-                });
-            }
-            
-            const discount = parseFloat(quotationData.discountAmount) || 0;
-            if (discount > 0) {
-                document.getElementById('pdf-discount-row').classList.remove('hidden');
-                document.getElementById('pdf-discount-amount').innerText = discount.toFixed(2);
-            } else {
-                document.getElementById('pdf-discount-row').classList.add('hidden');
+            currentInvoiceItems.forEach(item => {
+                subtotal += item.totalPrice || 0;
+            });
+
+            const currency = document.getElementById('input-currency').value;
+            const signs = document.querySelectorAll('.currency-sign');
+            signs.forEach(s => s.innerText = currency === 'EGP' ? ' ج.م ' : ' $ ');
+
+            const discountVal = parseFloat(document.getElementById('input-discount').value) || 0;
+            const shippingVal = parseFloat(document.getElementById('input-shipping').value) || 0;
+            const downpaymentPercent = parseFloat(document.getElementById('input-downpayment').value) || 0;
+            const docType = document.getElementById('input-doc-type').value;
+
+            let vatPercent = 0;
+            let vatAmount = 0;
+
+            if (docType === 'tax_invoice') {
+                vatPercent = parseFloat(document.getElementById('input-vat').value) || 0;
+                vatAmount = (subtotal - discountVal) * (vatPercent / 100);
             }
 
-            const totalAfterDiscount = Math.max(0, subtotal - discount);
-            let vatAmount = 0;
-            if (quotationData.docType === 'tax_invoice') {
-                vatAmount = totalAfterDiscount * (parseFloat(quotationData.vatPercent) / 100) || 0;
+            const totalFinal = subtotal - discountVal + vatAmount + shippingVal;
+            const downpaymentAmount = totalFinal * (downpaymentPercent / 100);
+            const remainingAmount = totalFinal - downpaymentAmount;
+
+            document.getElementById('pdf-subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('pdf-shipping').innerText = shippingVal.toFixed(2);
+            document.getElementById('pdf-total').innerText = totalFinal.toFixed(2);
+
+            const discountRow = document.getElementById('pdf-discount-row');
+            if (discountVal > 0) {
+                discountRow.classList.remove('hidden');
+                document.getElementById('pdf-discount-amount').innerText = discountVal.toFixed(2);
+            } else {
+                discountRow.classList.add('hidden');
             }
-            
-            const shipping = parseFloat(quotationData.shipping) || 0;
-            const grandTotal = totalAfterDiscount + vatAmount + shipping;
-            
-            const downpaymentPercent = parseFloat(quotationData.downPaymentPercent) || 0;
+
+            if (docType === 'tax_invoice') {
+                document.getElementById('pdf-vat-percentage').innerText = vatPercent;
+                document.getElementById('pdf-vat-amount').innerText = vatAmount.toFixed(2);
+            }
+
+            const downpaymentRow = document.getElementById('pdf-downpayment-row');
+            const remainingRow = document.getElementById('pdf-remaining-row');
             if (downpaymentPercent > 0) {
-                const downpaymentAmount = grandTotal * (downpaymentPercent / 100);
-                const remainingAmount = grandTotal - downpaymentAmount;
-                document.getElementById('pdf-downpayment-row').classList.remove('hidden');
-                document.getElementById('pdf-remaining-row').classList.remove('hidden');
+                downpaymentRow.classList.remove('hidden');
+                remainingRow.classList.remove('hidden');
                 document.getElementById('pdf-downpayment-percentage').innerText = downpaymentPercent;
                 document.getElementById('pdf-downpayment-amount').innerText = downpaymentAmount.toFixed(2);
                 document.getElementById('pdf-remaining-amount').innerText = remainingAmount.toFixed(2);
             } else {
-                document.getElementById('pdf-downpayment-row').classList.add('hidden');
-                document.getElementById('pdf-remaining-row').classList.add('hidden');
+                downpaymentRow.classList.add('hidden');
+                remainingRow.classList.add('hidden');
             }
-
-            document.getElementById('pdf-subtotal').innerText = subtotal.toFixed(2);
-            document.getElementById('pdf-vat-amount').innerText = vatAmount.toFixed(2);
-            document.getElementById('pdf-shipping').innerText = shipping.toFixed(2);
-            document.getElementById('pdf-total').innerText = grandTotal.toFixed(2);
         }
 
-        function updateItemField(index, field, value) {
-            if (!quotationData.items[index]) return;
-
-            if (field === 'qty') {
-                const qty = parseInt(value) > 0 ? parseInt(value) : 1;
-                quotationData.items[index].qty = qty;
-                
-                const search = findProductGlobally(quotationData.items[index].code);
-                if (search.found) {
-                    quotationData.items[index].price = getPriceFromBrackets(search.brackets, qty, quotationData.currency);
-                }
-            } else if (field === 'price') {
-                quotationData.items[index].price = parseFloat(value) >= 0 ? parseFloat(value) : 0;
-            } else {
-                quotationData.items[index][field] = value;
-            }
-            updatePreview();
-        }
-
-        function deleteItem(index) {
-            quotationData.items.splice(index, 1);
-            updatePreview();
-        }
-
-        // --- SMART INPUT SYSTEM ---
-        const smartInput = document.getElementById('smart-input');
-        const smartStatus = document.getElementById('smart-status');
-        
-        let smartCode = "";
-        let isWaitingForQty = false;
-        let matchedProductMeta = null;
-
-        smartInput.addEventListener('keydown', function(e) {
-            const value = this.value;
-
-            if (e.key === ' ' || e.code === 'Space') {
-                if (!isWaitingForQty && value.trim().length > 0) {
-                    e.preventDefault(); 
-                    const typedCode = value.trim().toUpperCase();
-                    const searchResult = findProductGlobally(typedCode);
-
-                    if (!searchResult.found) {
-                        this.classList.remove('border-amber-300', 'border-blue-400', 'bg-blue-50/30');
-                        this.classList.add('border-red-500', 'bg-red-50');
-                        smartStatus.innerHTML = `حالة الإدخال: <b class="text-red-600">❌ خطأ: الكود (${typedCode}) غير موجود في أي شيت!</b>`;
-                        return; 
-                    }
-
-                    smartCode = typedCode;
-                    matchedProductMeta = searchResult;
-                    isWaitingForQty = true;
-                    
-                    this.value = ""; 
-                    this.placeholder = `أدخل الكمية المطلوبة واضغط Enter...`;
-                    this.classList.remove('border-amber-300', 'border-red-500', 'bg-red-50');
-                    this.classList.add('border-blue-400', 'bg-blue-50/30');
-                    
-                    smartStatus.innerHTML = `حالة الإدخال: <b class="text-amber-600">تم رصد الكود في [${searchResult.sheetName}]، اكتب الكمية الآن...</b>`;
-                }
-            }
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                
-                let qty = 1;
-                if (isWaitingForQty) {
-                    qty = value.trim().length > 0 ? parseInt(value.trim()) : 1;
-                } else {
-                    if (value.trim().length > 0) {
-                        const typedCode = value.trim().toUpperCase();
-                        const searchResult = findProductGlobally(typedCode);
-                        if (!searchResult.found) {
-                            this.classList.remove('border-amber-300', 'border-blue-400', 'bg-blue-50/30');
-                            this.classList.add('border-red-500', 'bg-red-50');
-                            smartStatus.innerHTML = `حالة الإدخال: <b class="text-red-600">❌ خطأ: الكود (${typedCode}) غير موجود في أي شيت!</b>`;
-                            return;
-                        }
-                        smartCode = typedCode;
-                        matchedProductMeta = searchResult;
-                        qty = 1;
-                    } else {
-                        return; 
-                    }
-                }
-
-                const computedBracketPrice = getPriceFromBrackets(
-                    matchedProductMeta.brackets, 
-                    qty, 
-                    quotationData.currency
-                );
-                
-                let targetSpec = (quotationData.lang === 'ar') ? 
-                    (matchedProductMeta.product.spec_ar || matchedProductMeta.product.spec_en) : 
-                    (matchedProductMeta.product.spec_en || matchedProductMeta.product.spec_ar);
-
-                let targetMaterial = (quotationData.lang === 'ar') ? 
-                    (matchedProductMeta.product.material_ar || matchedProductMeta.product.material_en) : 
-                    (matchedProductMeta.product.material_en || matchedProductMeta.product.material_ar);
-
-                quotationData.items.push({ 
-                    code: smartCode, 
-                    spec: targetSpec, 
-                    material: targetMaterial, 
-                    qty: qty, 
-                    price: computedBracketPrice
-                });
-                
-                updatePreview();
-
-                smartCode = "";
-                isWaitingForQty = false;
-                matchedProductMeta = null;
-                this.value = "";
-                this.placeholder = "اكتب الكود التالي ثم اضغط مسافة...";
-                this.classList.remove('border-blue-400', 'bg-blue-50/30', 'border-red-500', 'bg-red-50');
-                this.classList.add('border-amber-300');
-                smartStatus.innerHTML = `حالة الإدخال: <b class="text-emerald-600">✓ تم تطبيق السعر والمواصفات بنجاح!</b>`;
-            }
-        });
-
-        // --- ARCHIVE SYSTEM ---
-        function saveToArchive(showAlert = true) {
-            let archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
-            const now = new Date();
-            const timestamp = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        function updatePreview() {
+            syncMetadata();
             
-            const itemToSave = { id: Date.now(), savedAt: timestamp, data: JSON.parse(JSON.stringify(quotationData)) };
-            archive.unshift(itemToSave); 
-            localStorage.setItem('dp_archive', JSON.stringify(archive));
+            const tableBody = document.getElementById('pdf-table-body');
+            tableBody.innerHTML = '';
+            const lang = document.getElementById('input-lang').value;
+            const isAr = lang === 'ar';
+
+            currentInvoiceItems.forEach((item, index) => {
+                const textSpec = isAr ? item.spec_ar : item.spec_en;
+                const textMat = isAr ? item.material_ar : item.material_en;
+                
+                let htmlRow = `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50/50">
+                        <td class="py-2 px-1 font-mono font-bold tracking-tight text-gray-900">${item.code}</td>
+                        <td class="py-2 px-1 text-gray-700 font-medium allow-wrap">${textSpec}</td>
+                        <td class="py-2 px-1 text-gray-500">${textMat}</td>
+                        <td class="py-2 px-1 text-center font-bold no-print">
+                            <input type="number" value="${item.qty}" min="1" onchange="updateInvoiceItemQty(${index}, this.value)" class="w-14 border text-center font-semibold rounded p-0.5">
+                        </td>
+                        <td class="py-2 px-1 text-center font-bold hidden print:table-cell">${item.qty}</td>
+                        <td class="py-2 px-1 text-right font-mono">${item.unitPrice.toFixed(2)}</td>
+                        <td class="py-2 px-1 text-right font-mono font-bold text-gray-950">${item.totalPrice.toFixed(2)}</td>
+                        <td class="py-2 px-1 text-center no-print">
+                            <button onclick="removeInvoiceItem(${index})" class="text-red-400 hover:text-red-600 font-bold px-1">✕</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', htmlRow);
+            });
+
+            calculateTotals();
+        }
+
+        function saveToArchive(explicitAlert = false) {
+            const customerName = document.getElementById('input-customer').value.trim();
+            if (!customerName || currentInvoiceItems.length === 0) {
+                if (explicitAlert) alert("⚠️ لا يمكن الحفظ! يرجى إدخال تفاصيل العميل وإضافة منتجات للفاتورة أولاً.");
+                return;
+            }
+
+            const operationRecord = {
+                archiveId: "arch_" + Date.now(),
+                timestamp: new Date().toLocaleString(),
+                docType: document.getElementById('input-doc-type').value,
+                docNumber: document.getElementById('input-doc-number').value,
+                currency: document.getElementById('input-currency').value,
+                customer: customerName,
+                items: JSON.parse(JSON.stringify(currentInvoiceItems)),
+                vat: parseFloat(document.getElementById('input-vat').value) || 0,
+                discount: parseFloat(document.getElementById('input-discount').value) || 0,
+                downpayment: parseFloat(document.getElementById('input-downpayment').value) || 0,
+                shipping: parseFloat(document.getElementById('input-shipping').value) || 0
+            };
+
+            archiveItems.unshift(operationRecord); 
+            localStorage.setItem('dp_invoice_archive', JSON.stringify(archiveItems));
             renderArchiveList();
-            if (showAlert) alert('تم الحفظ في الأرشيف بنجاح! 💾');
+            if (explicitAlert) alert("✓ تم حفظ العملية بنجاح داخل الأرشيف المحلي!");
+        }
+
+        function loadArchiveFromStorage() {
+            const stored = localStorage.getItem('dp_invoice_archive');
+            if (stored) {
+                try {
+                    archiveItems = JSON.parse(stored);
+                    renderArchiveList();
+                } catch(e) {
+                    archiveItems = [];
+                }
+            }
         }
 
         function renderArchiveList() {
-            const archiveList = document.getElementById('archive-list');
-            const searchQuery = document.getElementById('archive-search-input').value.trim().toLowerCase();
-            let archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
-            
-            archiveList.innerHTML = '';
-            
-            if(archive.length === 0) {
-                archiveList.innerHTML = `<p class="text-xs text-gray-400 text-center py-4 italic">الأرشيف فارغ حالياً.</p>`;
+            const container = document.getElementById('archive-list');
+            const searchKey = document.getElementById('archive-search-input').value.toLowerCase().trim();
+            container.innerHTML = '';
+
+            const filtered = archiveItems.filter(item => {
+                return item.customer.toLowerCase().includes(searchKey) || (item.docNumber && item.docNumber.toLowerCase().includes(searchKey));
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center font-cairo py-4">الأرشيف فارغ أو لم يتم العثور على نتائج مطابقة.</p>`;
                 return;
             }
 
-            if (searchQuery !== "") {
-                archive = archive.filter(item => {
-                    const clientName = item.data.customer ? item.data.customer.toLowerCase() : "";
-                    return clientName.includes(searchQuery);
-                });
-            }
-
-            if(archive.length === 0) {
-                archiveList.innerHTML = `<p class="text-xs text-amber-600 text-center py-4 italic font-cairo">لم يتم العثور على نتائج تطابق هذا العميل.</p>`;
-                return;
-            }
-
-            archive.forEach(item => {
-                const docTypeTitle = dictionary['ar'].titles[item.data.docType] || item.data.docType;
-                const docNum = item.data.docNumber || 'بدون رقم';
-                const client = item.data.customer ? item.data.customer.split('\n')[0] : 'عميل غير محدد';
-                const card = `
-                    <div class="p-3 border rounded-lg bg-gray-50 flex justify-between items-center text-xs hover:border-amber-400 transition">
-                        <div class="space-y-1 text-right" dir="rtl">
-                            <div class="font-bold text-gray-800">${docTypeTitle} (${docNum})</div>
-                            <div class="text-gray-600 text-[11px]">العميل: ${client}</div>
-                            <div class="text-[10px] text-gray-400 font-mono">${item.savedAt}</div>
-                        </div>
-                        <div class="flex space-x-2 border-r pr-2 mr-2">
-                            <button onclick="loadFromArchive(${item.id})" class="bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-800 px-2 py-1 rounded transition font-semibold">تعديل 📝</button>
-                            <button onclick="deleteArchiveItem(${item.id})" class="text-red-500 hover:text-red-700 font-bold p-1">✕</button>
-                        </div>
+            filtered.forEach(record => {
+                let card = document.createElement('div');
+                card.className = "bg-gray-50 hover:bg-amber-50/40 p-3 rounded-lg border text-right space-y-1 transition text-xs shadow-sm";
+                card.dir = "rtl";
+                card.innerHTML = `
+                    <div class="flex justify-between font-bold text-gray-800">
+                        <span class="text-amber-700 font-cairo">📄 العميل: ${record.customer.split('\n')[0]}</span>
+                        <span class="font-mono text-[10px] text-gray-400">${record.timestamp.split(',')[0]}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-500 font-cairo flex justify-between">
+                        <span>نوع المستند: <b>${record.docType.toUpperCase()}</b> | رقم: <b>${record.docNumber || '---'}</b></span>
+                        <span class="text-emerald-700 font-bold">(${record.items.length} منتجات)</span>
+                    </div>
+                    <div class="flex justify-end space-x-2 space-x-reverse pt-2 border-t border-gray-200 mt-1">
+                        <button onclick="restoreArchiveRecord('${record.archiveId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] px-2.5 py-1 rounded font-cairo">استدعاء 📁</button>
+                        <button onclick="deleteArchiveRecord('${record.archiveId}')" class="text-red-500 hover:text-red-700 text-[10px] font-bold px-1 font-cairo">حذف 🗑️</button>
                     </div>
                 `;
-                archiveList.insertAdjacentHTML('beforeend', card);
+                container.appendChild(card);
             });
         }
 
-        function clearArchiveSearch() {
-            document.getElementById('archive-search-input').value = "";
-            renderArchiveList();
-        }
+        function restoreArchiveRecord(archiveId) {
+            const record = archiveItems.find(r => r.archiveId === archiveId);
+            if (!record) return;
 
-        function loadFromArchive(id) {
-            const archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
-            const selected = archive.find(item => item.id === id);
-            if(selected) {
-                quotationData = JSON.parse(JSON.stringify(selected.data));
-                document.getElementById('input-lang').value = quotationData.lang;
-                document.getElementById('input-doc-type').value = quotationData.docType;
-                document.getElementById('input-doc-number').value = quotationData.docNumber;
-                document.getElementById('input-currency').value = quotationData.currency;
-                document.getElementById('input-date').value = quotationData.date;
-                document.getElementById('input-customer').value = quotationData.customer;
-                document.getElementById('input-vat').value = quotationData.vatPercent;
-                document.getElementById('input-discount').value = quotationData.discountAmount;
-                document.getElementById('input-downpayment').value = quotationData.downPaymentPercent;
-                document.getElementById('input-shipping').value = quotationData.shipping;
-                updatePreview();
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            if (confirm("هل تريد استدعاء هذه العملية؟ هذا الإجراء سيستبدل البيانات الحالية المعروضة على الشاشة.")) {
+                document.getElementById('input-doc-type').value = record.docType;
+                document.getElementById('input-doc-number').value = record.docNumber;
+                document.getElementById('input-currency').value = record.currency;
+                document.getElementById('input-customer').value = record.customer;
+                document.getElementById('input-vat').value = record.vat;
+                document.getElementById('input-discount').value = record.discount;
+                document.getElementById('input-downpayment').value = record.downpayment;
+                document.getElementById('input-shipping').value = record.shipping;
+
+                currentInvoiceItems = JSON.parse(JSON.stringify(record.items));
+                
+                updateDocLabels();
+                syncInvoicePricesOnly();
+                alert("✓ تم استدعاء البيانات بنجاح إلى لوحة المعاينة.");
             }
         }
 
-        function deleteArchiveItem(id) {
-            if(confirm('هل أنت متأكد من حذف هذه العملية من الأرشيف؟')) {
-                let archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
-                archive = archive.filter(item => item.id !== id);
-                localStorage.setItem('dp_archive', JSON.stringify(archive));
+        function deleteArchiveRecord(archiveId) {
+            if (confirm("هل تريد حذف هذا السجل نهائياً من الأرشيف؟")) {
+                archiveItems = archiveItems.filter(r => r.archiveId !== archiveId);
+                localStorage.setItem('dp_invoice_archive', JSON.stringify(archiveItems));
                 renderArchiveList();
             }
         }
 
         function clearAllArchive() {
-            if(confirm('هل أنت متأكد من مسح الأرشيف بالكامل؟')) {
-                localStorage.removeItem('dp_archive');
-                clearArchiveSearch();
+            if (confirm("تحذير! هل تريد حذف الأرشيف بأكمله وتصفيته نهائياً؟")) {
+                archiveItems = [];
+                localStorage.removeItem('dp_invoice_archive');
+                renderArchiveList();
             }
         }
 
-        // Live Event Listeners
-        document.getElementById('input-lang').addEventListener('change', (e) => { 
-            quotationData.lang = e.target.value; 
-            refreshItemsLanguage(); 
-            updatePreview(); 
-        });
-        document.getElementById('input-doc-type').addEventListener('change', (e) => { quotationData.docType = e.target.value; updatePreview(); });
-        document.getElementById('input-doc-number').addEventListener('input', (e) => { quotationData.docNumber = e.target.value; updatePreview(); });
-        document.getElementById('input-currency').addEventListener('change', (e) => { quotationData.currency = e.target.value; autoRepriceAllItems(); updatePreview(); });
-        document.getElementById('input-date').addEventListener('input', (e) => { quotationData.date = e.target.value; updatePreview(); });
-        document.getElementById('input-customer').addEventListener('input', (e) => { quotationData.customer = e.target.value; updatePreview(); });
-        document.getElementById('input-vat').addEventListener('input', (e) => { quotationData.vatPercent = e.target.value; updatePreview(); });
-        document.getElementById('input-discount').addEventListener('input', (e) => { quotationData.discountAmount = e.target.value; updatePreview(); });
-        document.getElementById('input-downpayment').addEventListener('input', (e) => { quotationData.downPaymentPercent = e.target.value; updatePreview(); });
-        document.getElementById('input-shipping').addEventListener('input', (e) => { quotationData.shipping = e.target.value; updatePreview(); });
+        function clearArchiveSearch() {
+            document.getElementById('archive-search-input').value = '';
+            renderArchiveList();
+        }
 
         function generatePDF() {
-            saveToArchive(false);
             const element = document.getElementById('quotation-preview');
-            let clientName = quotationData.customer ? quotationData.customer.split('\n')[0].trim() : 'Client';
-            clientName = clientName.replace(/[/\\?%*:|"<>]/g, '-'); 
-            const docDate = quotationData.date || 'No-Date';
-            const itemsCount = quotationData.items.length;
+            const docNum = document.getElementById('input-doc-number').value || "DOCUMENT";
+            const customerName = document.getElementById('input-customer').value.split('\n')[0].trim() || "CUSTOMER";
             
+            const sanitizedCustomer = customerName.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "_");
+            const filename = `${docNum}_${sanitizedCustomer}.pdf`;
+
             const opt = {
-                margin:       [0, 0, 0, 0], 
-                filename:     `${clientName}_${docDate}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false, scrollX: 0, scrollY: 0 },
-                pagebreak:    { mode: itemsCount <= 12 ? 'avoid' : ['avoid', 'css'] }, 
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: 0,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            
-            element.classList.remove('shadow-2xl');
-            html2pdf().set(opt).from(element).save().then(() => { element.classList.add('shadow-2xl'); });
+
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
