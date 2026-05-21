@@ -63,7 +63,7 @@
                 <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 transition-all duration-300 shadow-sm">
                     <div class="flex justify-between items-center border-b border-emerald-200 pb-2 mb-3" dir="rtl">
                         <h3 class="text-sm font-bold text-emerald-900 font-cairo flex items-center">
-                            <span>⚙️ إدارة الشيتات والتسعير التفاعلي (مربوط بالسحاب ☁️)</span>
+                            <span>⚙️ إدارة الشيتات والتسعير التفاعلي</span>
                         </h3>
                         <button onclick="toggleSheetManager()" id="toggle-sheet-btn" class="text-[11px] bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 font-cairo font-bold transition shadow-sm">
                             إخفاء النافذة ⬆️
@@ -75,11 +75,12 @@
                             <label class="block text-[12px] font-bold text-emerald-800 font-cairo">رفع ملف البيانات والأسعار (CSV File)</label>
                             <button onclick="clearAllUploadedSheets()" class="text-[11px] text-red-600 hover:underline font-cairo font-semibold">حذف الشيتات المخزنة 🗑️</button>
                         </div>
-                        <p class="text-[11px] text-emerald-700 mb-2 font-cairo text-right" dir="rtl">ارفع ملفاتك وعدل الشرائح، ثم اضغط (إخفاء النافذة) لغلق هذا القسم وتوفير مساحة الشاشة. البيانات ستظل محفوظة وتعمل في الخلفية سحابياً!</p>
+                        <p class="text-[11px] text-emerald-700 mb-2 font-cairo text-right" dir="rtl">ارفع ملفاتك وعدل الشرائح، ثم اضغط (إخفاء النافذة) لغلق هذا القسم وتوفير مساحة الشاشة. البيانات ستظل محفوظة وتعمل في الخلفية!</p>
                         
                         <input type="file" id="excel-file-input" accept=".csv" multiple class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 cursor-pointer">
                         
-                        <div id="sheets-editor-container" class="space-y-4 pt-2 max-h-[350px] overflow-y-auto hidden pr-1"></div>
+                        <div id="sheets-editor-container" class="space-y-4 pt-2 max-h-[350px] overflow-y-auto hidden pr-1">
+                            </div>
                     </div>
                 </div>
 
@@ -154,7 +155,7 @@
 
                 <div class="grid grid-cols-2 gap-3 border-t pt-4">
                     <button onclick="saveToArchive(true)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg font-semibold text-center shadow-md transition font-cairo">
-                        حفظ في الأرشيف سحابياً 💾
+                        حفظ في الأرشيف 💾
                     </button>
                     <button onclick="generatePDF()" class="w-full bg-gray-900 hover:bg-black text-white py-2.5 rounded-lg font-semibold text-center shadow-md transition font-cairo">
                         تحميل PDF ↓
@@ -164,8 +165,8 @@
 
             <div class="bg-white p-5 rounded-xl shadow-md space-y-4">
                 <div class="flex justify-between items-center border-b pb-2" dir="rtl">
-                    <h2 class="text-lg font-bold text-gray-800 font-cairo">أرشيف العمليات / Archive (Firebase)</h2>
-                    <button onclick="clearAllArchive()" class="text-xs text-red-500 hover:underline font-medium font-cairo">حذف الكل سحابياً</button>
+                    <h2 class="text-lg font-bold text-gray-800 font-cairo">أرشيف العمليات / Archive</h2>
+                    <button onclick="clearAllArchive()" class="text-xs text-red-500 hover:underline font-medium font-cairo">حذف الكل</button>
                 </div>
                 
                 <div class="relative" dir="rtl">
@@ -173,7 +174,8 @@
                     <button onclick="clearArchiveSearch()" class="absolute left-2.5 top-2.5 text-gray-400 hover:text-gray-600 text-xs font-bold">✕</button>
                 </div>
 
-                <div id="archive-list" class="space-y-3 max-h-[200px] overflow-y-auto pr-1"></div>
+                <div id="archive-list" class="space-y-3 max-h-[200px] overflow-y-auto pr-1">
+                    </div>
             </div>
 
         </div>
@@ -233,7 +235,8 @@
                                 <th class="py-2 px-1 text-center no-print" style="width: 3%;"></th>
                             </tr>
                         </thead>
-                        <tbody id="pdf-table-body" class="text-xs divide-y divide-gray-100"></tbody>
+                        <tbody id="pdf-table-body" class="text-xs divide-y divide-gray-100">
+                            </tbody>
                     </table>
 
                     <div id="pdf-summary-container" class="flex justify-end mt-4">
@@ -280,28 +283,8 @@
 
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, child, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        // ⚠️ استبدل البيانات دي ببيانات مشروع Firebase بتاعك من الـ Console
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        // Global variables linked window context
-        window.uploadedSheets = [];
-        window.archiveData = [];
+    <script>
+        let uploadedSheets = [];
 
         const defaultSheetData = {
             sheetId: "default",
@@ -324,106 +307,40 @@
             };
         });
 
-        // Sync and load real-time database functions
-        function loadInitialFirebaseData() {
-            // 1. Fetch Sheets
-            const sheetsRef = ref(db, 'uploadedSheets');
-            onValue(sheetsRef, (snapshot) => {
-                const data = snapshot.val();
-                window.uploadedSheets = data ? Object.values(data) : [];
-                renderAllSheetEditorTables();
-            });
-
-            // 2. Fetch Archive
-            const archiveRef = ref(db, 'archive');
-            onValue(archiveRef, (snapshot) => {
-                const data = snapshot.val();
-                window.archiveData = data ? Object.values(data) : [];
-                renderArchiveList();
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadInitialFirebaseData();
-        });
-
-        // Window exposed core actions
-        window.saveSheetsToStorage = function(showAlert = false) {
-            set(ref(db, 'uploadedSheets'), window.uploadedSheets).then(() => {
-                if (showAlert) alert(`✓ تم حفظ وتزامن الشيتات سحابياً بنجاح!`);
-            });
-        };
-
-        window.approveSheetChanges = function(sheetId) {
-            window.saveSheetsToStorage(false);
-            alert(`✓ تم اعتماد وتحديث الفاتورة والأسعار سحابياً!`);
-        };
-
-        window.removeSingleSheet = function(sheetId) {
-            if (confirm("هل أنت متأكد من حذف هذا الشيت نهائياً من السحابة؟")) {
-                window.uploadedSheets = window.uploadedSheets.filter(s => s.sheetId !== sheetId);
-                window.saveSheetsToStorage(false);
-            }
-        };
-
-        window.clearAllUploadedSheets = function() {
-            if (confirm("هل أنت متأكد من مسح جميع الشيتات سحابياً؟")) {
-                remove(ref(db, 'uploadedSheets')).then(() => {
-                    window.uploadedSheets = [];
-                    alert("تم تصفير النظام السحابي بنجاح.");
-                });
-            }
-        };
-
-        window.saveToArchive = function(showAlert = false) {
-            const docNum = document.getElementById('input-doc-number').value || "INV-" + Date.now();
-            const archiveObj = {
-                archiveId: "arch_" + Date.now(),
-                docNumber: docNum,
-                customer: document.getElementById('input-customer').value || "عميل افتراضي",
-                date: document.getElementById('input-date').value || new Date().toISOString().split('T')[0],
-                total: document.getElementById('pdf-total').innerText || "0.00"
-            };
-
-            set(ref(db, 'archive/' + archiveObj.archiveId), archiveObj).then(() => {
-                if(showAlert) alert("✓ تم الحفظ في أرشيف فايربيس بنجاح!");
-            });
-        };
-
-        window.clearAllArchive = function() {
-            if (confirm("هل تريد حذف الأرشيف السحابي بالكامل؟")) {
-                remove(ref(db, 'archive')).then(() => {
-                    window.archiveData = [];
-                    renderArchiveList();
-                });
-            }
-        };
-    </script>
-
-    <script>
         function toggleSheetManager() {
             const content = document.getElementById('sheet-manager-content');
             const btn = document.getElementById('toggle-sheet-btn');
+            
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 btn.innerHTML = 'إخفاء النافذة ⬆️';
                 btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
             } else {
                 content.classList.add('hidden');
                 btn.innerHTML = 'عرض وتعديل الشيتات ⬇️';
                 btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+                btn.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
             }
         }
 
+        window.addEventListener('DOMContentLoaded', function() {
+            loadSheetsFromStorage();
+            updatePreview();
+            renderArchiveList();
+        });
+
         function isArabicText(text) {
-            return /[\u0600-\u06FF]/.test(text);
+            const arabicPattern = /[\u0600-\u06FF]/;
+            return arabicPattern.test(text);
         }
 
-        // CSV parsing structure integration
         document.getElementById('excel-file-input').addEventListener('change', function(e) {
             const files = e.target.files;
             if (files.length === 0) return;
+
             let loadCounter = 0;
+            const targetTotal = files.length;
             
             Array.from(files).forEach((file, fileIdx) => {
                 const reader = new FileReader();
@@ -439,12 +356,27 @@
                         if (!line.trim()) return;
                         const columns = line.split(/[;,]/);
                         const code = columns[0].trim().toUpperCase();
+                        
                         if (code && code !== "CODE" && code !== "الكود") { 
                             let rawSpec = columns[1] ? columns[1].trim() : "";
                             let rawMaterial = columns[2] ? columns[2].trim() : "";
-                            let spec_en = rawSpec, spec_ar = rawSpec;
-                            let material_en = rawMaterial, material_ar = rawMaterial;
-                            productsData[code] = { spec_en, spec_ar, material_en, material_ar };
+
+                            let spec_en = "Chocolate Mold", spec_ar = "قالب شيكولاتة";
+                            let material_en = "Polycarbonate", material_ar = "بولي كربونات";
+
+                            if (rawSpec) {
+                                if (isArabicText(rawSpec)) { spec_ar = rawSpec; spec_en = rawSpec; } 
+                                else { spec_en = rawSpec; spec_ar = rawSpec; }
+                            }
+                            if (rawMaterial) {
+                                if (isArabicText(rawMaterial)) { material_ar = rawMaterial; material_en = rawMaterial; } 
+                                else { material_en = rawMaterial; material_ar = rawMaterial; }
+                            }
+
+                            productsData[code] = { 
+                                spec_en: spec_en, spec_ar: spec_ar, 
+                                material_en: material_en, material_ar: material_ar 
+                            };
                         }
                     });
 
@@ -459,10 +391,12 @@
                         products: productsData
                     };
 
-                    window.uploadedSheets.push(sheetObject);
+                    uploadedSheets.push(sheetObject);
                     loadCounter++;
-                    if (loadCounter === files.length) {
-                        window.saveSheetsToStorage(true);
+
+                    if (loadCounter === targetTotal) {
+                        saveSheetsToStorage(false); 
+                        renderAllSheetEditorTables();
                     }
                 };
                 reader.readAsText(file);
@@ -472,74 +406,631 @@
         function renderAllSheetEditorTables() {
             const container = document.getElementById('sheets-editor-container');
             container.innerHTML = '';
-            if (window.uploadedSheets && window.uploadedSheets.length > 0) {
+
+            if (uploadedSheets.length > 0) {
                 container.classList.remove('hidden');
-                window.uploadedSheets.forEach(sheetObj => {
-                    let htmlBlock = `
-                        <div class="bg-white p-4 rounded-xl border-2 border-emerald-500 shadow-md space-y-3 mb-4" id="wrapper-${sheetObj.sheetId}" dir="rtl">
-                            <div class="flex justify-between items-center bg-emerald-800 text-white p-2 rounded-lg">
-                                <span class="text-sm font-bold font-cairo">📂 الشيت: ${sheetObj.sheetName} (${Object.keys(sheetObj.products).length} كود)</span>
-                                <button onclick="window.removeSingleSheet('${sheetObj.sheetId}')" class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded hover:bg-red-700 font-cairo">حذف الشيت</button>
-                            </div>
-                            <div class="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                ${sheetObj.brackets.map((b, idx) => `
-                                    <div class="flex items-center space-x-2 space-x-reverse text-xs bg-white p-1.5 rounded border">
-                                        <span>من: ${b.fromQty} إلى: ${b.toQty}</span> | 
-                                        <span class="text-emerald-700 font-bold">ج.م: ${b.priceEGP}</span> | 
-                                        <span class="text-blue-700 font-bold">$: ${b.priceUSD}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <button onclick="window.approveSheetChanges('${sheetObj.sheetId}')" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg font-cairo">اعتماد التعديلات سحابياً 💾</button>
-                        </div>`;
-                    container.insertAdjacentHTML('beforeend', htmlBlock);
+                uploadedSheets.forEach(sheetObj => {
+                    renderSheetEditorTable(sheetObj);
                 });
             } else {
                 container.classList.add('hidden');
             }
         }
 
-        function renderArchiveList() {
-            const listContainer = document.getElementById('archive-list');
-            listContainer.innerHTML = '';
-            const searchVal = document.getElementById('archive-search-input').value.toLowerCase();
-            const filtered = (window.archiveData || []).filter(item => item.customer.toLowerCase().includes(searchVal));
+        function renderSheetEditorTable(sheetObj) {
+            const container = document.getElementById('sheets-editor-container');
+            
+            let htmlBlock = `
+                <div class="bg-white p-4 rounded-xl border-2 border-emerald-500 shadow-md space-y-3" id="wrapper-${sheetObj.sheetId}" dir="rtl">
+                    <div class="flex justify-between items-center bg-emerald-800 text-white p-2 rounded-lg">
+                        <span class="text-sm font-bold font-cairo">📂 الشيت: ${sheetObj.sheetName} (${Object.keys(sheetObj.products).length} كود)</span>
+                        <div class="space-x-2 space-x-reverse">
+                            <button onclick="addNewSheetBracket('${sheetObj.sheetId}')" class="bg-white text-emerald-900 text-xs font-bold px-2 py-1 rounded hover:bg-emerald-50 font-cairo">+ إضافة شريحة</button>
+                            <button onclick="removeSingleSheet('${sheetObj.sheetId}')" class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded hover:bg-red-700 font-cairo">حذف الشيت</button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[11px] text-gray-500 font-cairo">قم بتعديل شرائح كميات وأسعار الشيت أدناه، ثم اضغط على زر الاعتماد المرفق بالأسفل للحفظ:</p>
+                    
+                    <div id="brackets-sheet-container-${sheetObj.sheetId}" class="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        ${renderSheetBracketsHtml(sheetObj.sheetId, sheetObj.brackets)}
+                    </div>
 
-            if(filtered.length === 0) {
-                listContainer.innerHTML = '<p class="text-center text-xs text-gray-400 font-cairo py-4">لا توجد عمليات محفوظة متطابقة.</p>';
+                    <div class="pt-2 flex justify-end">
+                        <button onclick="approveSheetChanges('${sheetObj.sheetId}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm font-cairo flex items-center space-x-1 space-x-reverse">
+                            <span>اعتماد وحفظ التعديلات في النظام 💾</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', htmlBlock);
+        }
+
+        function renderSheetBracketsHtml(sheetId, brackets) {
+            return brackets.map((b, idx) => `
+                <div class="flex items-center space-x-2 space-x-reverse text-xs bg-white p-1.5 rounded border border-gray-100">
+                    <span class="text-gray-500 font-medium">من:</span>
+                    <input type="number" value="${b.fromQty}" onchange="updateSheetBracketValue('${sheetId}', ${idx}, 'fromQty', this.value)" class="w-16 border text-center font-mono p-1 rounded font-bold">
+                    <span class="text-gray-500 font-medium">إلى:</span>
+                    <input type="number" value="${b.toQty}" onchange="updateSheetBracketValue('${sheetId}', ${idx}, 'toQty', this.value)" class="w-20 border text-center font-mono p-1 rounded font-bold">
+                    
+                    <div class="h-4 w-px bg-gray-300 mx-1"></div>
+                    
+                    <span class="text-emerald-700 font-bold">ج.م:</span>
+                    <input type="number" value="${b.priceEGP}" onchange="updateSheetBracketValue('${sheetId}', ${idx}, 'priceEGP', this.value)" class="w-24 border text-center font-mono p-1 rounded bg-amber-50 font-black text-amber-800">
+                    
+                    <span class="text-blue-700 font-bold">$:</span>
+                    <input type="number" value="${b.priceUSD}" onchange="updateSheetBracketValue('${sheetId}', ${idx}, 'priceUSD', this.value)" class="w-20 border text-center font-mono p-1 rounded bg-blue-50 font-black text-blue-800">
+                    
+                    <button onclick="deleteSheetBracket('${sheetId}', ${idx})" class="text-red-500 hover:text-red-700 font-bold px-2 text-sm">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function updateSheetBracketValue(sheetId, idx, field, value) {
+            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
+            if (sheet && sheet.brackets[idx]) {
+                sheet.brackets[idx][field] = parseFloat(value) || 0;
+            }
+        }
+
+        function saveSheetsToStorage(showAlert = false) {
+            localStorage.setItem('dp_uploaded_sheets', JSON.stringify(uploadedSheets));
+            if (showAlert) {
+                alert(`✓ تم حفظ وتخزين الشيتات بنجاح!`);
+            }
+        }
+
+        function loadSheetsFromStorage() {
+            const stored = localStorage.getItem('dp_uploaded_sheets');
+            if (stored) {
+                try {
+                    uploadedSheets = JSON.parse(stored);
+                    renderAllSheetEditorTables();
+                } catch (e) {
+                    console.error("خطأ أثناء قراءة الشيتات المخزنة", e);
+                    uploadedSheets = [];
+                }
+            }
+        }
+
+        function approveSheetChanges(sheetId) {
+            saveSheetsToStorage(false);
+            syncInvoicePricesOnly(); 
+            alert(`✓ تم اعتماد وتحديث الفاتورة بالأسعار الجديدة!`);
+        }
+
+        function removeSingleSheet(sheetId) {
+            if (confirm("هل أنت متأكد من حذف هذا الشيت نهائياً؟")) {
+                uploadedSheets = uploadedSheets.filter(s => s.sheetId !== sheetId);
+                saveSheetsToStorage(false);
+                renderAllSheetEditorTables();
+                syncInvoicePricesOnly();
+            }
+        }
+
+        function clearAllUploadedSheets() {
+            if (confirm("هل أنت متأكد من مسح جميع الشيتات؟")) {
+                uploadedSheets = [];
+                localStorage.removeItem('dp_uploaded_sheets');
+                renderAllSheetEditorTables();
+                syncInvoicePricesOnly();
+                alert("تم تصفير النظام والعودة للأكواد الافتراضية.");
+            }
+        }
+
+        function addNewSheetBracket(sheetId) {
+            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
+            if (sheet) {
+                const lastBracket = sheet.brackets[sheet.brackets.length - 1];
+                const nextFrom = lastBracket ? lastBracket.toQty + 1 : 1;
+                sheet.brackets.push({ fromQty: nextFrom, toQty: nextFrom + 50, priceEGP: 400, priceUSD: 8 });
+                
+                const bContainer = document.getElementById(`brackets-sheet-container-${sheetId}`);
+                if(bContainer) bContainer.innerHTML = renderSheetBracketsHtml(sheetId, sheet.brackets);
+            }
+        }
+
+        function deleteSheetBracket(sheetId, idx) {
+            let sheet = uploadedSheets.find(s => s.sheetId === sheetId);
+            if (sheet && sheet.brackets.length > 1) {
+                sheet.brackets.splice(idx, 1);
+                const bContainer = document.getElementById(`brackets-sheet-container-${sheetId}`);
+                if(bContainer) bContainer.innerHTML = renderSheetBracketsHtml(sheetId, sheet.brackets);
+            }
+        }
+
+        function syncInvoicePricesOnly() {
+            quotationData.items.forEach(item => {
+                const search = findProductGlobally(item.code);
+                if (search.found) {
+                    item.price = getPriceFromBrackets(search.brackets, item.qty, quotationData.currency);
+                }
+            });
+            updatePreview();
+        }
+
+        function getPriceFromBrackets(brackets, qty, currency) {
+            const q = parseInt(qty) || 1;
+            const matchedBracket = brackets.find(b => q >= b.fromQty && q <= b.toQty);
+            
+            if (matchedBracket) {
+                return currency === "EGP" ? matchedBracket.priceEGP : matchedBracket.priceUSD;
+            }
+            if (brackets.length > 0) {
+                const lastB = brackets[brackets.length - 1];
+                return currency === "EGP" ? lastB.priceEGP : lastB.priceUSD;
+            }
+            return currency === "EGP" ? 500 : 10; 
+        }
+
+        function findProductGlobally(code) {
+            const searchCode = code.trim().toUpperCase();
+
+            for (let sheet of uploadedSheets) {
+                if (sheet.products && sheet.products[searchCode]) {
+                    return { found: true, product: sheet.products[searchCode], brackets: sheet.brackets, sheetName: sheet.sheetName };
+                }
+            }
+            if (defaultSheetData.products[searchCode]) {
+                return { found: true, product: defaultSheetData.products[searchCode], brackets: defaultSheetData.brackets, sheetName: defaultSheetData.sheetName };
+            }
+            return { found: false };
+        }
+
+        const dictionary = {
+            en: {
+                align: 'text-left', dir: 'ltr', font: 'font-inter',
+                regNo: 'Commercial Reg No:', taxNo: 'Sales TAX Reg No:', fileNo: 'File Number:',
+                date: 'Date:', custTitle: 'Customer Details', noItems: 'No items added yet.',
+                thCode: 'Code', thSpec: 'Specifications', thMat: 'Material', thQty: 'Quantity',
+                thUnit: 'Unit Price', thTotal: 'Total Price', subtotal: 'Subtotal', discount: 'Discount',
+                vat: 'VAT', shipping: 'Shipping', total: 'Total Price', downpayment: 'Down Payment',
+                remaining: 'Remaining Amount', footerCo: 'Diamond Plast Co.',
+                numLabels: { quotation: 'Quotation No:', invoice: 'Invoice No:', tax_invoice: 'Invoice No:' },
+                titles: { quotation: 'QUOTATION', invoice: 'INVOICE', tax_invoice: 'TAX INVOICE' }
+            },
+            ar: {
+                align: 'text-right', dir: 'rtl', font: 'font-cairo',
+                regNo: 'رقم السجل التجاري:', taxNo: 'رقم التسجيل الضريبي:', fileNo: 'رقم الملف الضريبي:',
+                date: 'التاريخ:', custTitle: 'تفاصيل العميل', noItems: 'لم يتم إضافة منتجات بعد.',
+                thCode: 'الكود', thSpec: 'المواصفات', thMat: 'الخامة', thQty: 'الكمية',
+                thUnit: 'سعر الوحدة', thTotal: 'إجمالي السعر', subtotal: 'الإجمالي الفرعي', discount: 'الخصم',
+                vat: 'ضريبة القيمة المضافة', shipping: 'تكلفة الشحن', total: 'الإجمالي النهائي',
+                downpayment: 'المقدم المدفوع', remaining: 'المبلغ المتبقي', footerCo: 'شركة دايموند بلاست',
+                numLabels: { quotation: 'رقم عرض السعر:', invoice: 'رقم الفاتورة:', tax_invoice: 'رقم الفاتورة الضريبية:' },
+                titles: { quotation: 'عرض سعر', invoice: 'فاتورة بيع', tax_invoice: 'فاتورة ضريبية' }
+            }
+        };
+
+        let quotationData = {
+            lang: "en", docType: "quotation", docNumber: "", currency: "EGP",
+            date: new Date().toISOString().split('T')[0], customer: "",
+            vatPercent: 14, discountAmount: 0, downPaymentPercent: 0, shipping: 0.00, items: []
+        };
+
+        function refreshItemsLanguage() {
+            quotationData.items.forEach(item => {
+                const search = findProductGlobally(item.code);
+                if (search.found) {
+                    if (quotationData.lang === 'ar') {
+                        item.spec = search.product.spec_ar || search.product.spec_en;
+                        item.material = search.product.material_ar || search.product.material_en;
+                    } else {
+                        item.spec = search.product.spec_en || search.product.spec_ar;
+                        item.material = search.product.material_en || search.product.material_ar;
+                    }
+                }
+            });
+        }
+
+        function autoRepriceAllItems() {
+            quotationData.items.forEach(item => {
+                const search = findProductGlobally(item.code);
+                if (search.found) {
+                    item.price = getPriceFromBrackets(search.brackets, item.qty, quotationData.currency);
+                }
+            });
+        }
+
+        function updatePreview() {
+            const lang = quotationData.lang;
+            const dict = dictionary[lang];
+            const previewEl = document.getElementById('quotation-preview');
+
+            previewEl.setAttribute('dir', dict.dir);
+            previewEl.className = `pdf-page shadow-2xl relative ${dict.font}`;
+            
+            if(lang === 'ar') {
+                document.getElementById('pdf-title-container').className = "my-4 flex flex-row-reverse justify-between items-end";
+                document.getElementById('pdf-meta-block').className = "text-xs text-right space-y-0.5";
+                document.getElementById('pdf-summary-container').className = "flex justify-start mt-4";
+                document.getElementById('pdf-footer-container').className = "border-t border-gray-200 pt-3 flex flex-row-reverse justify-between text-[10px] text-gray-500 mt-auto";
+                document.getElementById('pdf-table').className = "w-full text-right border-collapse table-fixed";
+            } else {
+                document.getElementById('pdf-title-container').className = "my-4 flex justify-between items-end";
+                document.getElementById('pdf-meta-block').className = "text-xs text-right space-y-0.5";
+                document.getElementById('pdf-summary-container').className = "flex justify-end mt-4";
+                document.getElementById('pdf-footer-container').className = "border-t border-gray-200 pt-3 flex justify-between text-[10px] text-gray-500 mt-auto";
+                document.getElementById('pdf-table').className = "w-full text-left border-collapse table-fixed";
+            }
+
+            document.getElementById('lbl-reg-no').innerText = dict.regNo + " ";
+            document.getElementById('lbl-tax-no').innerText = dict.taxNo + " ";
+            document.getElementById('lbl-file-no').innerText = dict.fileNo + " ";
+            document.getElementById('lbl-date').innerText = dict.date + " ";
+            document.getElementById('lbl-doc-number').innerText = dict.numLabels[quotationData.docType] + " ";
+            document.getElementById('lbl-customer-title').innerText = dict.custTitle;
+            document.getElementById('th-code').innerText = dict.thCode;
+            document.getElementById('th-spec').innerText = dict.thSpec;
+            document.getElementById('th-material').innerText = dict.thMat;
+            document.getElementById('th-qty').innerText = dict.thQty;
+            document.getElementById('th-unit-price').innerText = `${dict.thUnit} (${quotationData.currency === "EGP" ? "EGP" : "$"})`;
+            document.getElementById('th-total-price').innerText = dict.thTotal;
+            document.getElementById('lbl-subtotal').innerText = dict.subtotal;
+            document.getElementById('lbl-discount').innerText = dict.discount;
+            document.getElementById('lbl-vat-name').innerText = dict.vat;
+            document.getElementById('lbl-shipping').innerText = dict.shipping;
+            document.getElementById('lbl-total').innerText = dict.total;
+            document.getElementById('lbl-downpayment').innerText = dict.downpayment;
+            document.getElementById('lbl-remaining').innerText = dict.remaining;
+            document.getElementById('lbl-footer-co').innerText = dict.footerCo;
+
+            const titleEl = document.getElementById('pdf-doc-title');
+            const vatInputContainer = document.getElementById('vat-input-container');
+            const pdfVatRow = document.getElementById('pdf-vat-row');
+
+            titleEl.innerText = dict.titles[quotationData.docType];
+
+            if (quotationData.docType === 'tax_invoice') {
+                vatInputContainer.classList.remove('hidden');
+                pdfVatRow.classList.remove('hidden');
+            } else {
+                vatInputContainer.classList.add('hidden');
+                pdfVatRow.classList.add('hidden');
+            }
+
+            const currencySigns = document.querySelectorAll('.currency-sign');
+            currencySigns.forEach(el => {
+                el.innerText = quotationData.currency === "EGP" ? " EGP" : "$";
+            });
+
+            document.getElementById('pdf-date').innerText = quotationData.date || '--/--/----';
+            document.getElementById('pdf-doc-number').innerText = quotationData.docNumber || '---';
+            document.getElementById('pdf-customer').innerText = quotationData.customer || '---';
+            document.getElementById('pdf-vat-percentage').innerText = quotationData.vatPercent;
+            
+            const tbody = document.getElementById('pdf-table-body');
+            tbody.innerHTML = '';
+            
+            let subtotal = 0;
+            const currentSign = quotationData.currency === "EGP" ? " EGP" : "$";
+            const textAlignment = lang === 'ar' ? 'text-right' : 'text-left';
+            const invTextAlignment = lang === 'ar' ? 'text-left' : 'text-right';
+            
+            if (quotationData.items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-gray-400 italic">${dict.noItems}</td></tr>`;
+            } else {
+                quotationData.items.forEach((item, index) => {
+                    const itemTotal = item.qty * item.price;
+                    subtotal += itemTotal;
+                    
+                    const row = `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-1 px-1 overflow-hidden text-ellipsis">
+                                <input type="text" value="${item.code}" onchange="updateItemField(${index}, 'code', this.value)" class="w-full text-gray-900 font-medium bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${textAlignment} focus:outline-none focus:bg-white truncate">
+                            </td>
+                            <td class="py-1 px-1 overflow-hidden text-ellipsis allow-wrap">
+                                <div contenteditable="true" onblur="updateItemField(${index}, 'spec', this.innerText)" class="w-full text-gray-600 bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${textAlignment} focus:outline-none min-h-[24px] focus:bg-white outline-none">${item.spec}</div>
+                            </td>
+                            <td class="py-1 px-1 overflow-hidden text-ellipsis">
+                                <div contenteditable="true" onblur="updateItemField(${index}, 'material', this.innerText)" class="w-full text-gray-600 bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${textAlignment} focus:outline-none min-h-[24px] focus:bg-white outline-none">${item.material}</div>
+                            </td>
+                            <td class="py-1 px-1 text-center">
+                                <input type="number" value="${item.qty}" min="1" onchange="updateItemField(${index}, 'qty', this.value)" class="w-full text-center font-semibold bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 focus:outline-none focus:bg-white font-mono">
+                            </td>
+                            <td class="py-1 px-1">
+                                <input type="number" value="${item.price}" min="0" step="0.01" onchange="updateItemField(${index}, 'price', this.value)" class="w-full text-gray-600 bg-transparent border border-transparent hover:border-gray-200 focus:border-amber-500 rounded px-1 py-0.5 ${invTextAlignment} focus:outline-none focus:bg-white font-mono">
+                            </td>
+                            <td class="py-2 px-1 font-semibold text-gray-900 ${invTextAlignment} font-mono truncate">${itemTotal.toFixed(2)}${currentSign}</td>
+                            <td class="py-2 px-1 text-center no-print"><button onclick="deleteItem(${index})" class="text-red-400 hover:text-red-600 font-bold transition p-0.5">✕</button></td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+            
+            const discount = parseFloat(quotationData.discountAmount) || 0;
+            if (discount > 0) {
+                document.getElementById('pdf-discount-row').classList.remove('hidden');
+                document.getElementById('pdf-discount-amount').innerText = discount.toFixed(2);
+            } else {
+                document.getElementById('pdf-discount-row').classList.add('hidden');
+            }
+
+            const totalAfterDiscount = Math.max(0, subtotal - discount);
+            let vatAmount = 0;
+            if (quotationData.docType === 'tax_invoice') {
+                vatAmount = totalAfterDiscount * (parseFloat(quotationData.vatPercent) / 100) || 0;
+            }
+            
+            const shipping = parseFloat(quotationData.shipping) || 0;
+            const grandTotal = totalAfterDiscount + vatAmount + shipping;
+            
+            const downpaymentPercent = parseFloat(quotationData.downPaymentPercent) || 0;
+            if (downpaymentPercent > 0) {
+                const downpaymentAmount = grandTotal * (downpaymentPercent / 100);
+                const remainingAmount = grandTotal - downpaymentAmount;
+                document.getElementById('pdf-downpayment-row').classList.remove('hidden');
+                document.getElementById('pdf-remaining-row').classList.remove('hidden');
+                document.getElementById('pdf-downpayment-percentage').innerText = downpaymentPercent;
+                document.getElementById('pdf-downpayment-amount').innerText = downpaymentAmount.toFixed(2);
+                document.getElementById('pdf-remaining-amount').innerText = remainingAmount.toFixed(2);
+            } else {
+                document.getElementById('pdf-downpayment-row').classList.add('hidden');
+                document.getElementById('pdf-remaining-row').classList.add('hidden');
+            }
+
+            document.getElementById('pdf-subtotal').innerText = subtotal.toFixed(2);
+            document.getElementById('pdf-vat-amount').innerText = vatAmount.toFixed(2);
+            document.getElementById('pdf-shipping').innerText = shipping.toFixed(2);
+            document.getElementById('pdf-total').innerText = grandTotal.toFixed(2);
+        }
+
+        function updateItemField(index, field, value) {
+            if (!quotationData.items[index]) return;
+
+            if (field === 'qty') {
+                const qty = parseInt(value) > 0 ? parseInt(value) : 1;
+                quotationData.items[index].qty = qty;
+                
+                const search = findProductGlobally(quotationData.items[index].code);
+                if (search.found) {
+                    quotationData.items[index].price = getPriceFromBrackets(search.brackets, qty, quotationData.currency);
+                }
+            } else if (field === 'price') {
+                quotationData.items[index].price = parseFloat(value) >= 0 ? parseFloat(value) : 0;
+            } else {
+                quotationData.items[index][field] = value;
+            }
+            updatePreview();
+        }
+
+        function deleteItem(index) {
+            quotationData.items.splice(index, 1);
+            updatePreview();
+        }
+
+        // --- SMART INPUT SYSTEM ---
+        const smartInput = document.getElementById('smart-input');
+        const smartStatus = document.getElementById('smart-status');
+        
+        let smartCode = "";
+        let isWaitingForQty = false;
+        let matchedProductMeta = null;
+
+        smartInput.addEventListener('keydown', function(e) {
+            const value = this.value;
+
+            if (e.key === ' ' || e.code === 'Space') {
+                if (!isWaitingForQty && value.trim().length > 0) {
+                    e.preventDefault(); 
+                    const typedCode = value.trim().toUpperCase();
+                    const searchResult = findProductGlobally(typedCode);
+
+                    if (!searchResult.found) {
+                        this.classList.remove('border-amber-300', 'border-blue-400', 'bg-blue-50/30');
+                        this.classList.add('border-red-500', 'bg-red-50');
+                        smartStatus.innerHTML = `حالة الإدخال: <b class="text-red-600">❌ خطأ: الكود (${typedCode}) غير موجود في أي شيت!</b>`;
+                        return; 
+                    }
+
+                    smartCode = typedCode;
+                    matchedProductMeta = searchResult;
+                    isWaitingForQty = true;
+                    
+                    this.value = ""; 
+                    this.placeholder = `أدخل الكمية المطلوبة واضغط Enter...`;
+                    this.classList.remove('border-amber-300', 'border-red-500', 'bg-red-50');
+                    this.classList.add('border-blue-400', 'bg-blue-50/30');
+                    
+                    smartStatus.innerHTML = `حالة الإدخال: <b class="text-amber-600">تم رصد الكود في [${searchResult.sheetName}]، اكتب الكمية الآن...</b>`;
+                }
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                
+                let qty = 1;
+                if (isWaitingForQty) {
+                    qty = value.trim().length > 0 ? parseInt(value.trim()) : 1;
+                } else {
+                    if (value.trim().length > 0) {
+                        const typedCode = value.trim().toUpperCase();
+                        const searchResult = findProductGlobally(typedCode);
+                        if (!searchResult.found) {
+                            this.classList.remove('border-amber-300', 'border-blue-400', 'bg-blue-50/30');
+                            this.classList.add('border-red-500', 'bg-red-50');
+                            smartStatus.innerHTML = `حالة الإدخال: <b class="text-red-600">❌ خطأ: الكود (${typedCode}) غير موجود في أي شيت!</b>`;
+                            return;
+                        }
+                        smartCode = typedCode;
+                        matchedProductMeta = searchResult;
+                        qty = 1;
+                    } else {
+                        return; 
+                    }
+                }
+
+                const computedBracketPrice = getPriceFromBrackets(
+                    matchedProductMeta.brackets, 
+                    qty, 
+                    quotationData.currency
+                );
+                
+                let targetSpec = (quotationData.lang === 'ar') ? 
+                    (matchedProductMeta.product.spec_ar || matchedProductMeta.product.spec_en) : 
+                    (matchedProductMeta.product.spec_en || matchedProductMeta.product.spec_ar);
+
+                let targetMaterial = (quotationData.lang === 'ar') ? 
+                    (matchedProductMeta.product.material_ar || matchedProductMeta.product.material_en) : 
+                    (matchedProductMeta.product.material_en || matchedProductMeta.product.material_ar);
+
+                quotationData.items.push({ 
+                    code: smartCode, 
+                    spec: targetSpec, 
+                    material: targetMaterial, 
+                    qty: qty, 
+                    price: computedBracketPrice
+                });
+                
+                updatePreview();
+
+                smartCode = "";
+                isWaitingForQty = false;
+                matchedProductMeta = null;
+                this.value = "";
+                this.placeholder = "اكتب الكود التالي ثم اضغط مسافة...";
+                this.classList.remove('border-blue-400', 'bg-blue-50/30', 'border-red-500', 'bg-red-50');
+                this.classList.add('border-amber-300');
+                smartStatus.innerHTML = `حالة الإدخال: <b class="text-emerald-600">✓ تم تطبيق السعر والمواصفات بنجاح!</b>`;
+            }
+        });
+
+        // --- ARCHIVE SYSTEM ---
+        function saveToArchive(showAlert = true) {
+            let archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
+            const now = new Date();
+            const timestamp = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            
+            const itemToSave = { id: Date.now(), savedAt: timestamp, data: JSON.parse(JSON.stringify(quotationData)) };
+            archive.unshift(itemToSave); 
+            localStorage.setItem('dp_archive', JSON.stringify(archive));
+            renderArchiveList();
+            if (showAlert) alert('تم الحفظ في الأرشيف بنجاح! 💾');
+        }
+
+        function renderArchiveList() {
+            const archiveList = document.getElementById('archive-list');
+            const searchQuery = document.getElementById('archive-search-input').value.trim().toLowerCase();
+            let archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
+            
+            archiveList.innerHTML = '';
+            
+            if(archive.length === 0) {
+                archiveList.innerHTML = `<p class="text-xs text-gray-400 text-center py-4 italic">الأرشيف فارغ حالياً.</p>`;
                 return;
             }
 
-            filtered.forEach(item => {
-                let node = `
-                    <div class="bg-gray-50 border p-2.5 rounded-lg flex justify-between items-center shadow-sm text-xs" dir="rtl">
-                        <div>
-                            <div class="font-bold text-gray-800 font-cairo">${item.customer}</div>
-                            <div class="text-[10px] text-gray-500 mt-0.5">${item.date} | رقم: ${item.docNumber}</div>
+            if (searchQuery !== "") {
+                archive = archive.filter(item => {
+                    const clientName = item.data.customer ? item.data.customer.toLowerCase() : "";
+                    return clientName.includes(searchQuery);
+                });
+            }
+
+            if(archive.length === 0) {
+                archiveList.innerHTML = `<p class="text-xs text-amber-600 text-center py-4 italic font-cairo">لم يتم العثور على نتائج تطابق هذا العميل.</p>`;
+                return;
+            }
+
+            archive.forEach(item => {
+                const docTypeTitle = dictionary['ar'].titles[item.data.docType] || item.data.docType;
+                const docNum = item.data.docNumber || 'بدون رقم';
+                const client = item.data.customer ? item.data.customer.split('\n')[0] : 'عميل غير محدد';
+                const card = `
+                    <div class="p-3 border rounded-lg bg-gray-50 flex justify-between items-center text-xs hover:border-amber-400 transition">
+                        <div class="space-y-1 text-right" dir="rtl">
+                            <div class="font-bold text-gray-800">${docTypeTitle} (${docNum})</div>
+                            <div class="text-gray-600 text-[11px]">العميل: ${client}</div>
+                            <div class="text-[10px] text-gray-400 font-mono">${item.savedAt}</div>
                         </div>
-                        <div class="text-left">
-                            <span class="font-mono font-bold text-emerald-700">${item.total}</span>
+                        <div class="flex space-x-2 border-r pr-2 mr-2">
+                            <button onclick="loadFromArchive(${item.id})" class="bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-800 px-2 py-1 rounded transition font-semibold">تعديل 📝</button>
+                            <button onclick="deleteArchiveItem(${item.id})" class="text-red-500 hover:text-red-700 font-bold p-1">✕</button>
                         </div>
-                    </div>`;
-                listContainer.insertAdjacentHTML('beforeend', node);
+                    </div>
+                `;
+                archiveList.insertAdjacentHTML('beforeend', card);
             });
         }
 
         function clearArchiveSearch() {
-            document.getElementById('archive-search-input').value = '';
+            document.getElementById('archive-search-input').value = "";
             renderArchiveList();
         }
 
+        function loadFromArchive(id) {
+            const archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
+            const selected = archive.find(item => item.id === id);
+            if(selected) {
+                quotationData = JSON.parse(JSON.stringify(selected.data));
+                document.getElementById('input-lang').value = quotationData.lang;
+                document.getElementById('input-doc-type').value = quotationData.docType;
+                document.getElementById('input-doc-number').value = quotationData.docNumber;
+                document.getElementById('input-currency').value = quotationData.currency;
+                document.getElementById('input-date').value = quotationData.date;
+                document.getElementById('input-customer').value = quotationData.customer;
+                document.getElementById('input-vat').value = quotationData.vatPercent;
+                document.getElementById('input-discount').value = quotationData.discountAmount;
+                document.getElementById('input-downpayment').value = quotationData.downPaymentPercent;
+                document.getElementById('input-shipping').value = quotationData.shipping;
+                updatePreview();
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }
+        }
+
+        function deleteArchiveItem(id) {
+            if(confirm('هل أنت متأكد من حذف هذه العملية من الأرشيف؟')) {
+                let archive = JSON.parse(localStorage.getItem('dp_archive')) || [];
+                archive = archive.filter(item => item.id !== id);
+                localStorage.setItem('dp_archive', JSON.stringify(archive));
+                renderArchiveList();
+            }
+        }
+
+        function clearAllArchive() {
+            if(confirm('هل أنت متأكد من مسح الأرشيف بالكامل؟')) {
+                localStorage.removeItem('dp_archive');
+                clearArchiveSearch();
+            }
+        }
+
+        // Live Event Listeners
+        document.getElementById('input-lang').addEventListener('change', (e) => { 
+            quotationData.lang = e.target.value; 
+            refreshItemsLanguage(); 
+            updatePreview(); 
+        });
+        document.getElementById('input-doc-type').addEventListener('change', (e) => { quotationData.docType = e.target.value; updatePreview(); });
+        document.getElementById('input-doc-number').addEventListener('input', (e) => { quotationData.docNumber = e.target.value; updatePreview(); });
+        document.getElementById('input-currency').addEventListener('change', (e) => { quotationData.currency = e.target.value; autoRepriceAllItems(); updatePreview(); });
+        document.getElementById('input-date').addEventListener('input', (e) => { quotationData.date = e.target.value; updatePreview(); });
+        document.getElementById('input-customer').addEventListener('input', (e) => { quotationData.customer = e.target.value; updatePreview(); });
+        document.getElementById('input-vat').addEventListener('input', (e) => { quotationData.vatPercent = e.target.value; updatePreview(); });
+        document.getElementById('input-discount').addEventListener('input', (e) => { quotationData.discountAmount = e.target.value; updatePreview(); });
+        document.getElementById('input-downpayment').addEventListener('input', (e) => { quotationData.downPaymentPercent = e.target.value; updatePreview(); });
+        document.getElementById('input-shipping').addEventListener('input', (e) => { quotationData.shipping = e.target.value; updatePreview(); });
+
         function generatePDF() {
+            saveToArchive(false);
             const element = document.getElementById('quotation-preview');
+            let clientName = quotationData.customer ? quotationData.customer.split('\n')[0].trim() : 'Client';
+            clientName = clientName.replace(/[/\\?%*:|"<>]/g, '-'); 
+            const docDate = quotationData.date || 'No-Date';
+            const itemsCount = quotationData.items.length;
+            
             const opt = {
-                margin: 0,
-                filename: `Diamond-Plast-${document.getElementById('input-doc-number').value || 'Doc'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin:       [0, 0, 0, 0], 
+                filename:     `${clientName}_${docDate}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false, scrollX: 0, scrollY: 0 },
+                pagebreak:    { mode: itemsCount <= 12 ? 'avoid' : ['avoid', 'css'] }, 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            
+            element.classList.remove('shadow-2xl');
+            html2pdf().set(opt).from(element).save().then(() => { element.classList.add('shadow-2xl'); });
         }
     </script>
 </body>
