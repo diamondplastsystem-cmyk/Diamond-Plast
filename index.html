@@ -81,7 +81,7 @@
                             <label class="block text-[12px] font-bold text-emerald-800 font-cairo">رفع ملف البيانات والأسعار (CSV File)</label>
                             <button onclick="clearAllUploadedSheets()" class="text-[11px] text-red-600 hover:underline font-cairo font-semibold">حذف الشيتات المخزنة 🗑️</button>
                         </div>
-                        <p class="text-[11px] text-emerald-700 mb-2 font-cairo text-right" dir="rtl">ارفع ملفاتك وعدل الشرائح، ثم اضغط (إخفاء النافذة) لغلق هذا القسم وتوفير مساحة الشاشة. البيانات ستظل محفوظة وتعمل في الخلفية!</p>
+                        <p class="text-[11px] text-emerald-700 mb-2 font-cairo text-right" dir="rtl">ارفع ملفاتك وعدل الشرائح، ثم اضغط (إخفاء النافذة) لغلق هذا قسم وتوفير مساحة الشاشة. البيانات ستظل محفوظة وتعمل في الخلفية!</p>
                         
                         <input type="file" id="excel-file-input" accept=".csv" multiple class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600 cursor-pointer">
                         
@@ -189,11 +189,11 @@
             <div id="quotation-preview" class="pdf-page shadow-2xl relative transition-all">
                 
                 <div>
-                    <!-- هيدر الفاتورة مع ربط لوجو جوجل درايف الجديد المباشر -->
+                    <!-- هيدر الفاتورة واللوجو الجديد المباشر لجوجل درايف -->
                     <div id="pdf-header-container" class="flex justify-between items-center border-b-2 border-gray-100 pb-4 text-left select-none" dir="ltr">
                         <div class="flex items-center space-x-4">
-                            <!-- تم ربط رابط التنزيل المباشر الجديد لملف اللوجو الخاص بك هنا مع تفعيل CORS لضمان ظهور الصورة في تصدير الـ PDF -->
-                            <img src="https://docs.google.com/uc?export=download&id=1e6xTLVk4uhfJiQgAyGI_A6LxUHceUKrO" crossorigin="anonymous" alt="Diamond Plast Logo" class="h-20 w-auto object-contain" onerror="this.style.display='none'">
+                            <!-- تم ربط كود معرف الملف الجديد (1T93HKr3zoVVNL6AaeiAbByT0yWRYjsA5) برابط التنزيل المباشر -->
+                            <img src="https://docs.google.com/uc?export=download&id=1T93HKr3zoVVNL6AaeiAbByT0yWRYjsA5" crossorigin="anonymous" alt="Diamond Plast Logo" class="h-20 w-auto object-contain" onerror="this.style.display='none'">
                             <div class="flex flex-col justify-center mx-1">
                                 <h1 class="text-lg font-black tracking-wider text-gray-900 leading-none">DIAMOND <span class="text-amber-500 font-normal">PLAST</span></h1>
                                 <p class="text-[8px] uppercase tracking-widest text-gray-500 font-medium mt-1">Design and manufacture of chocolate molds</p>
@@ -350,7 +350,7 @@
                 content.classList.add('hidden');
                 btn.innerHTML = 'عرض وتعديل الشيتات ⬇️';
                 btn.classList.replace('bg-emerald-600', 'bg-blue-600');
-                btn.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-blue-700');
             }
         }
 
